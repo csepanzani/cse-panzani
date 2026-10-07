@@ -1,0 +1,9 @@
+{
+  "name":"CSE Panzani",
+  "short_name":"CSE Panzani",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#f4f6f5",
+  "theme_color":"#08743b",
+  "icons":[{"src":"logo.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]
+}
