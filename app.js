@@ -1,112 +1,207 @@
+/* =========================================================
+   CSE PANZANI - APPLICATION
+   ========================================================= */
+
 const pages = {
-  actualites: ["Actualités", "📢", "Les dernières informations du CSE, les affichages, les communications RH, CGT et CSSCT."],
-  billetterie: ["Billetterie", "🎟️", "Cinémas, parcs d'attractions, spectacles et cartes cadeaux."],
-  sorties: ["Sorties & voyages", "🚌", "Retrouvez les voyages, sorties, week-ends et journées organisés par le CSE."],
-  offres: ["Offres CSE", "🎁", "Promotions et avantages négociés pour les salariés."],
-  agenda: ["Agenda", "📅", "Toutes les dates importantes : inscriptions, sorties, événements et échéances."],
-  inscriptions: ["Inscriptions", "📝", "Inscrivez-vous aux prochaines activités directement depuis votre téléphone."],
-  documents: ["Documents", "📄", "Règlements, comptes rendus, fiches pratiques et informations utiles."],
-  contact: ["Contacter le CSE", "☎️", "Une question ? Retrouvez ici les coordonnées et horaires du CSE."],
-  notifications: ["Notifications", "🔔", "Vous avez 3 nouvelles notifications."],
-  plus: ["Plus", "☰", "Paramètres, informations pratiques et espace administrateur."]
+  actualites: [
+    "Actualités",
+    "📢",
+    "Les dernières informations du CSE, les affichages, les communications RH, CGT et CSSCT."
+  ],
+
+  billetterie: [
+    "Billetterie",
+    "🎟️",
+    "Cinémas, parcs d'attractions, spectacles et cartes cadeaux."
+  ],
+
+  sorties: [
+    "Sorties & voyages",
+    "🚌",
+    "Retrouvez les voyages, sorties, week-ends et journées organisés par le CSE."
+  ],
+
+  offres: [
+    "Offres CSE",
+    "🎁",
+    "Promotions et avantages négociés pour les salariés."
+  ],
+
+  agenda: [
+    "Agenda",
+    "📅",
+    "Toutes les dates importantes : inscriptions, sorties, événements et échéances."
+  ],
+
+  inscriptions: [
+    "Inscriptions",
+    "📝",
+    "Inscrivez-vous aux prochaines activités directement depuis votre téléphone."
+  ],
+
+  documents: [
+    "Documents",
+    "📄",
+    "Règlements, comptes rendus, fiches pratiques et informations utiles."
+  ],
+
+  contact: [
+    "Contacter le CSE",
+    "☎️",
+    "Une question ? Retrouvez ici les coordonnées et horaires du CSE."
+  ],
+
+  notifications: [
+    "Notifications",
+    "🔔",
+    "Vous avez 3 nouvelles notifications."
+  ],
+
+  plus: [
+    "Plus",
+    "☰",
+    "Paramètres, informations pratiques et espace administrateur."
+  ]
 };
 
 
-/* =========================
+/* =========================================================
+   OUTILS
+   ========================================================= */
+
+function hideHome() {
+  const elements = [
+    ".welcome",
+    ".news",
+    ".grid",
+    ".feature"
+  ];
+
+  elements.forEach(selector => {
+    const el = document.querySelector(selector);
+    if (el) el.hidden = true;
+  });
+}
+
+
+function showContent() {
+  const content = document.getElementById("content");
+
+  if (content) {
+    content.hidden = false;
+  }
+}
+
+
+function clearBottomActive() {
+  document
+    .querySelectorAll(".bottom button")
+    .forEach(button => button.classList.remove("active"));
+}
+
+
+/* =========================================================
    NAVIGATION
-========================= */
+   ========================================================= */
 
 function showSection(key) {
-
-  if (key === "plus") {
-    showAuth();
-    return;
-  }
 
   if (key === "sorties") {
     publicActivities();
     return;
   }
 
-  const welcome = document.querySelector(".welcome");
-  const news = document.querySelector(".news");
-  const grid = document.querySelector(".grid");
-  const feature = document.querySelector(".feature");
-  const content = document.getElementById("content");
-
-  if (welcome) welcome.hidden = true;
-  if (news) news.hidden = true;
-  if (grid) grid.hidden = true;
-  if (feature) feature.hidden = true;
-  if (content) content.hidden = false;
-
-  const p = pages[key] || pages.actualites;
-
-  if (content) {
-    content.innerHTML = `
-      <button class="back" onclick="goHome()">← Accueil</button>
-
-      <h2>${p[1]} ${p[0]}</h2>
-
-      <p>${p[2]}</p>
-
-      <button class="adminBtn" onclick="adminDemo()">
-        ⚙️ Ouvrir l’espace administrateur
-      </button>
-
-      <hr>
-
-      <p>
-        <strong>Prototype :</strong>
-        cette rubrique est prête à recevoir les contenus réels du CSE.
-      </p>
-    `;
+  if (key === "plus") {
+    showAuth();
+    return;
   }
 
-  document.querySelectorAll(".bottom button").forEach(function(b) {
-    b.classList.remove("active");
-  });
+  hideHome();
+  showContent();
+  clearBottomActive();
+
+  const content = document.getElementById("content");
+
+  if (!content) return;
+
+  const page = pages[key] || pages.actualites;
+
+  content.innerHTML = `
+    <button class="back" onclick="goHome()">← Accueil</button>
+
+    <h2>${page[1]} ${page[0]}</h2>
+
+    <p>${page[2]}</p>
+
+    <button class="adminBtn" onclick="adminDemo()">
+      ⚙️ Ouvrir l’espace administrateur
+    </button>
+
+    <hr>
+
+    <p>
+      <strong>Prototype :</strong>
+      cette rubrique est prête à recevoir les contenus réels du CSE.
+    </p>
+  `;
 }
 
 
 function goHome() {
 
-  ["welcome", "news", "grid", "feature"].forEach(function(x) {
-    const el = document.querySelector("." + x);
+  const elements = [
+    ".welcome",
+    ".news",
+    ".grid",
+    ".feature"
+  ];
+
+  elements.forEach(selector => {
+    const el = document.querySelector(selector);
     if (el) el.hidden = false;
   });
 
   const content = document.getElementById("content");
-  if (content) content.hidden = true;
+
+  if (content) {
+    content.hidden = true;
+  }
+
+  clearBottomActive();
 
   const firstButton = document.querySelector(".bottom button");
-  if (firstButton) firstButton.classList.add("active");
-}
 
-
-/* =========================
-   DATE
-========================= */
-
-function updateDate() {
-
-  const date = document.getElementById("date");
-
-  if (date) {
-    date.textContent = new Intl.DateTimeFormat("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    }).format(new Date());
+  if (firstButton) {
+    firstButton.classList.add("active");
   }
 }
 
 
-/* =========================
+/* =========================================================
+   DATE
+   ========================================================= */
+
+function updateDate() {
+
+  const dateElement = document.getElementById("date");
+
+  if (!dateElement) return;
+
+  dateElement.textContent =
+    new Intl.DateTimeFormat("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }).format(new Date());
+}
+
+
+/* =========================================================
    ACTIVITÉS DE DÉMONSTRATION
-========================= */
+   ========================================================= */
 
 const demoEvents = [
+
   {
     id: 1,
     title: "Week-end ski – Saint-Jean-Montclar",
@@ -115,6 +210,7 @@ const demoEvents = [
     places: 18,
     registered: 0
   },
+
   {
     id: 2,
     title: "Journée Ok Corral",
@@ -123,6 +219,7 @@ const demoEvents = [
     places: 50,
     registered: 0
   },
+
   {
     id: 3,
     title: "Disneyland Paris",
@@ -131,6 +228,7 @@ const demoEvents = [
     places: 50,
     registered: 0
   }
+
 ];
 
 
@@ -144,16 +242,16 @@ function getEvents() {
       return JSON.parse(saved);
     }
 
-  } catch (e) {
-    console.warn("Erreur localStorage :", e);
+  } catch (error) {
+
+    console.warn("Impossible de lire les activités.", error);
+
   }
 
-  try {
-    localStorage.setItem(
-      "cse_events",
-      JSON.stringify(demoEvents)
-    );
-  } catch (e) {}
+  localStorage.setItem(
+    "cse_events",
+    JSON.stringify(demoEvents)
+  );
 
   return demoEvents;
 }
@@ -161,40 +259,23 @@ function getEvents() {
 
 function saveEvents(events) {
 
-  try {
-    localStorage.setItem(
-      "cse_events",
-      JSON.stringify(events)
-    );
-  } catch (e) {
-    console.warn("Impossible de sauvegarder :", e);
-  }
+  localStorage.setItem(
+    "cse_events",
+    JSON.stringify(events)
+  );
+
 }
 
 
-/* =========================
-   ADMINISTRATION
-========================= */
+/* =========================================================
+   ACTIVITÉS PUBLIQUES
+   ========================================================= */
 
-function adminDemo() {
+function publicActivities() {
 
-  const welcome = document.querySelector(".welcome");
-  const news = document.querySelector(".news");
-  const grid = document.querySelector(".grid");
-  const feature = document.querySelector(".feature");
-  const content = document.getElementById("content");
-
-  if (welcome) welcome.hidden = true;
-  if (news) news.hidden = true;
-  if (grid) grid.hidden = true;
-  if (feature) feature.hidden = true;
-  if (content) content.hidden = false;
-
-  renderAdmin();
-}
-
-
-function renderAdmin() {
+  hideHome();
+  showContent();
+  clearBottomActive();
 
   const content = document.getElementById("content");
 
@@ -202,23 +283,290 @@ function renderAdmin() {
 
   const events = getEvents();
 
-  const totalRegistered = events.reduce(function(n, e) {
-    return n + Number(e.registered || 0);
-  }, 0);
-
-  const totalPlaces = events.reduce(function(n, e) {
-    return n + Number(e.places || 0);
-  }, 0);
-
-  content.innerHTML = `
+  let html = `
     <button class="back" onclick="goHome()">
       ← Accueil
     </button>
 
-    <h2>⚙️ Espace administrateur</h2>
+    <h2>🚌 Sorties & activités</h2>
+  `;
+
+  if (!events.length) {
+
+    html += `
+      <p>
+        Aucune activité disponible pour le moment.
+      </p>
+    `;
+
+  } else {
+
+    events.forEach(event => {
+
+      const available =
+        event.places - event.registered;
+
+      html += `
+        <div class="adminEvent">
+
+          <strong>
+            ${event.title}
+          </strong>
+
+          <small>
+            📅 ${event.date}
+            · 💶 ${event.price}
+            · 👥 ${available} place(s) disponible(s)
+          </small>
+
+          <button
+            class="primary"
+            onclick="registerEvent(${event.id})"
+          >
+            📝 S'inscrire
+          </button>
+
+        </div>
+      `;
+
+    });
+
+  }
+
+  content.innerHTML = html;
+}
+
+
+/* =========================================================
+   INSCRIPTION À UNE ACTIVITÉ
+   ========================================================= */
+
+function registerEvent(id) {
+
+  const events = getEvents();
+
+  const event = events.find(
+    item => item.id === id
+  );
+
+  if (!event) return;
+
+  if (event.registered >= event.places) {
+
+    alert("Cette activité est complète.");
+
+    return;
+  }
+
+  const content = document.getElementById("content");
+
+  if (!content) return;
+
+  const remaining =
+    event.places - event.registered;
+
+  content.innerHTML = `
+
+    <button
+      class="back"
+      onclick="publicActivities()"
+    >
+      ← Activités
+    </button>
+
+    <h2>📝 Inscription</h2>
 
     <p>
-      <strong>Gestion des activités du CSE</strong>
+      <strong>${event.title}</strong>
+      <br>
+      ${event.date}
+      · ${event.price}
+    </p>
+
+    <form
+      onsubmit="submitRegistration(event, ${id})"
+    >
+
+      <label>
+        Nom et prénom
+
+        <input
+          id="regName"
+          required
+        >
+      </label>
+
+      <label>
+        Nombre de personnes
+
+        <input
+          id="regPeople"
+          type="number"
+          min="1"
+          max="${remaining}"
+          value="1"
+          required
+        >
+      </label>
+
+      <label>
+        Téléphone
+
+        <input
+          id="regPhone"
+          inputmode="tel"
+        >
+      </label>
+
+      <button
+        class="primary"
+        type="submit"
+      >
+        Valider mon inscription
+      </button>
+
+    </form>
+  `;
+}
+
+
+function submitRegistration(eventForm, id) {
+
+  eventForm.preventDefault();
+
+  const events = getEvents();
+
+  const event = events.find(
+    item => item.id === id
+  );
+
+  if (!event) return;
+
+  const people =
+    Number(
+      document.getElementById("regPeople").value
+    );
+
+  if (
+    event.registered + people >
+    event.places
+  ) {
+
+    alert(
+      "Il ne reste pas assez de places."
+    );
+
+    return;
+  }
+
+  const registrations =
+    JSON.parse(
+      localStorage.getItem("reg_" + id) || "[]"
+    );
+
+  registrations.push({
+
+    name:
+      document.getElementById("regName").value,
+
+    people: people,
+
+    phone:
+      document.getElementById("regPhone").value
+
+  });
+
+  localStorage.setItem(
+    "reg_" + id,
+    JSON.stringify(registrations)
+  );
+
+  event.registered += people;
+
+  saveEvents(events);
+
+  const content =
+    document.getElementById("content");
+
+  content.innerHTML = `
+
+    <button
+      class="back"
+      onclick="goHome()"
+    >
+      ← Accueil
+    </button>
+
+    <h2>✅ Inscription enregistrée</h2>
+
+    <p>
+      Votre inscription pour
+      <strong>${event.title}</strong>
+      a bien été enregistrée.
+    </p>
+
+  `;
+}
+
+
+/* =========================================================
+   ADMINISTRATION
+   ========================================================= */
+
+function adminDemo() {
+
+  hideHome();
+  showContent();
+
+  const content =
+    document.getElementById("content");
+
+  if (!content) return;
+
+  renderAdmin();
+}
+
+
+function renderAdmin() {
+
+  const content =
+    document.getElementById("content");
+
+  if (!content) return;
+
+  const events = getEvents();
+
+  const totalRegistered =
+    events.reduce(
+      (total, event) =>
+        total + event.registered,
+      0
+    );
+
+  const totalPlaces =
+    events.reduce(
+      (total, event) =>
+        total + event.places,
+      0
+    );
+
+  content.innerHTML = `
+
+    <button
+      class="back"
+      onclick="goHome()"
+    >
+      ← Accueil
+    </button>
+
+    <h2>
+      ⚙️ Espace administrateur
+    </h2>
+
+    <p>
+      <strong>
+        Gestion des activités du CSE
+      </strong>
     </p>
 
     <div class="adminStats">
@@ -240,67 +588,92 @@ function renderAdmin() {
 
     </div>
 
-    <button class="adminBtn" onclick="showCreateEvent()">
+    <button
+      class="adminBtn"
+      onclick="showCreateEvent()"
+    >
       ➕ Créer une activité
     </button>
 
-    <h3>Activités publiées</h3>
+    <h3>
+      Activités publiées
+    </h3>
 
     <div id="adminEvents">
 
-      ${events.map(function(e) {
+      ${
+        events.map(event => `
 
-        return `
           <div class="adminEvent">
 
-            <strong>${escapeHtml(e.title)}</strong>
+            <strong>
+              ${event.title}
+            </strong>
 
             <small>
-              📅 ${escapeHtml(e.date)}
-              · 💶 ${escapeHtml(e.price)}
-              · 👥 ${e.registered}/${e.places}
+              📅 ${event.date}
+              · 💶 ${event.price}
+              · 👥 ${event.registered}/${event.places}
             </small>
 
             <div>
 
-              <button onclick="viewRegistrations(${e.id})">
+              <button
+                onclick="viewRegistrations(${event.id})"
+              >
                 👥 Inscrits
               </button>
 
-              <button onclick="deleteEvent(${e.id})">
+              <button
+                onclick="deleteEvent(${event.id})"
+              >
                 🗑️ Supprimer
               </button>
 
             </div>
 
           </div>
-        `;
 
-      }).join("")}
+        `).join("")
+      }
 
     </div>
+
   `;
 }
 
 
+/* =========================================================
+   CRÉER UNE ACTIVITÉ
+   ========================================================= */
+
 function showCreateEvent() {
 
-  const content = document.getElementById("content");
+  const content =
+    document.getElementById("content");
 
   if (!content) return;
 
   content.innerHTML = `
 
-    <button class="back" onclick="adminDemo()">
+    <button
+      class="back"
+      onclick="adminDemo()"
+    >
       ← Administration
     </button>
 
-    <h2>➕ Nouvelle activité</h2>
+    <h2>
+      ➕ Nouvelle activité
+    </h2>
 
-    <form onsubmit="createEvent(event)">
+    <form
+      onsubmit="createEvent(event)"
+    >
 
       <label>
         Nom de l'activité
+
         <input
           id="evTitle"
           required
@@ -310,6 +683,7 @@ function showCreateEvent() {
 
       <label>
         Date
+
         <input
           id="evDate"
           required
@@ -319,6 +693,7 @@ function showCreateEvent() {
 
       <label>
         Tarif
+
         <input
           id="evPrice"
           required
@@ -328,6 +703,7 @@ function showCreateEvent() {
 
       <label>
         Nombre de places
+
         <input
           id="evPlaces"
           type="number"
@@ -337,35 +713,45 @@ function showCreateEvent() {
         >
       </label>
 
-      <button class="primary" type="submit">
+      <button
+        class="primary"
+        type="submit"
+      >
         Publier l'activité
       </button>
 
     </form>
+
   `;
 }
 
 
-function createEvent(e) {
+function createEvent(eventForm) {
 
-  e.preventDefault();
+  eventForm.preventDefault();
 
   const events = getEvents();
 
-  const title = document.getElementById("evTitle");
-  const date = document.getElementById("evDate");
-  const price = document.getElementById("evPrice");
-  const places = document.getElementById("evPlaces");
-
-  if (!title || !date || !price || !places) return;
-
   events.unshift({
+
     id: Date.now(),
-    title: title.value,
-    date: date.value,
-    price: price.value,
-    places: Number(places.value),
+
+    title:
+      document.getElementById("evTitle").value,
+
+    date:
+      document.getElementById("evDate").value,
+
+    price:
+      document.getElementById("evPrice").value,
+
+    places:
+      Number(
+        document.getElementById("evPlaces").value
+      ),
+
     registered: 0
+
   });
 
   saveEvents(events);
@@ -373,16 +759,25 @@ function createEvent(e) {
   renderAdmin();
 }
 
+
+/* =========================================================
+   SUPPRIMER UNE ACTIVITÉ
+   ========================================================= */
 
 function deleteEvent(id) {
 
-  if (!confirm("Supprimer cette activité ?")) {
+  if (
+    !confirm(
+      "Supprimer cette activité ?"
+    )
+  ) {
     return;
   }
 
-  const events = getEvents().filter(function(e) {
-    return e.id !== id;
-  });
+  const events =
+    getEvents().filter(
+      event => event.id !== id
+    );
 
   saveEvents(events);
 
@@ -390,239 +785,454 @@ function deleteEvent(id) {
 }
 
 
+/* =========================================================
+   VOIR LES INSCRIPTIONS
+   ========================================================= */
+
 function viewRegistrations(id) {
 
-  const events = getEvents();
-
-  const event = events.find(function(x) {
-    return x.id === id;
-  });
+  const event =
+    getEvents().find(
+      item => item.id === id
+    );
 
   if (!event) return;
 
-  let regs = [];
-
-  try {
-    regs = JSON.parse(
-      localStorage.getItem("reg_" + id) || "[]"
+  const registrations =
+    JSON.parse(
+      localStorage.getItem(
+        "reg_" + id
+      ) || "[]"
     );
-  } catch (e) {
-    regs = [];
-  }
 
-  const content = document.getElementById("content");
+  const content =
+    document.getElementById("content");
 
   if (!content) return;
 
-  content.innerHTML = `
+  let html = `
 
-    <button class="back" onclick="adminDemo()">
+    <button
+      class="back"
+      onclick="adminDemo()"
+    >
       ← Administration
     </button>
 
-    <h2>👥 ${escapeHtml(event.title)}</h2>
+    <h2>
+      👥 ${event.title}
+    </h2>
 
     <p>
-      ${regs.length} inscription(s)
+      ${registrations.length}
+      inscription(s)
     </p>
 
-    ${
-      regs.length
-
-      ? regs.map(function(r, i) {
-
-          return `
-            <div class="adminEvent">
-
-              <strong>
-                ${i + 1}. ${escapeHtml(r.name)}
-              </strong>
-
-              <small>
-                ${r.people} personne(s)
-                · ${escapeHtml(r.phone || "Téléphone non renseigné")}
-              </small>
-
-            </div>
-          `;
-
-        }).join("")
-
-      : "<p>Aucune inscription pour le moment.</p>"
-    }
-
   `;
+
+  if (registrations.length) {
+
+    registrations.forEach(
+      (registration, index) => {
+
+        html += `
+
+          <div class="adminEvent">
+
+            <strong>
+              ${index + 1}.
+              ${registration.name}
+            </strong>
+
+            <small>
+              ${registration.people}
+              personne(s)
+              ·
+              ${
+                registration.phone ||
+                "Téléphone non renseigné"
+              }
+            </small>
+
+          </div>
+
+        `;
+
+      }
+    );
+
+  } else {
+
+    html += `
+      <p>
+        Aucune inscription pour le moment.
+      </p>
+    `;
+
+  }
+
+  content.innerHTML = html;
 }
 
 
-/* =========================
-   ACTIVITÉS PUBLIQUES
-========================= */
+/* =========================================================
+   SUPABASE
+   ========================================================= */
 
-function publicActivities() {
+let supabaseClient = null;
 
-  const content = document.getElementById("content");
+let currentUser = null;
+
+let currentProfile = null;
+
+
+function initSupabase() {
+
+  if (
+    !window.supabase ||
+    !window.CSE_SUPABASE_URL ||
+    !window.CSE_SUPABASE_KEY
+  ) {
+
+    console.warn(
+      "Supabase n'est pas configuré."
+    );
+
+    return;
+  }
+
+  try {
+
+    supabaseClient =
+      window.supabase.createClient(
+        window.CSE_SUPABASE_URL,
+        window.CSE_SUPABASE_KEY
+      );
+
+  } catch (error) {
+
+    console.error(
+      "Erreur Supabase :",
+      error
+    );
+
+    return;
+  }
+
+
+  supabaseClient.auth
+    .getSession()
+    .then(({ data }) => {
+
+      currentUser =
+        data?.session?.user || null;
+
+      if (currentUser) {
+        loadProfile();
+      }
+
+    })
+    .catch(error => {
+
+      console.warn(
+        "Erreur récupération session :",
+        error
+      );
+
+    });
+
+
+  supabaseClient.auth
+    .onAuthStateChange(
+      (_event, session) => {
+
+        currentUser =
+          session?.user || null;
+
+        if (currentUser) {
+
+          loadProfile();
+
+        } else {
+
+          currentProfile = null;
+
+          updateAuthBadge();
+
+        }
+
+      }
+    );
+
+}
+
+
+/* =========================================================
+   PROFIL
+   ========================================================= */
+
+async function loadProfile() {
+
+  if (
+    !supabaseClient ||
+    !currentUser
+  ) {
+    return;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("profils")
+        .select(
+          "id,nom,role"
+        )
+        .eq(
+          "id",
+          currentUser.id
+        )
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.warn(
+        "Profil non accessible :",
+        error.message
+      );
+
+      currentProfile = null;
+
+    } else {
+
+      currentProfile = data;
+
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "Erreur chargement profil :",
+      error
+    );
+
+    currentProfile = null;
+
+  }
+
+  updateAuthBadge();
+}
+
+
+/* =========================================================
+   BADGE UTILISATEUR
+   ========================================================= */
+
+function escapeHtml(value) {
+
+  return String(
+    value ?? ""
+  ).replace(
+    /[&<>'"]/g,
+    character => {
+
+      const replacements = {
+
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        '"': "&quot;"
+
+      };
+
+      return replacements[character];
+
+    }
+  );
+
+}
+
+
+function updateAuthBadge() {
+
+  const element =
+    document.getElementById(
+      "authBadge"
+    );
+
+  if (!element) return;
+
+  if (currentUser) {
+
+    const label =
+      currentProfile?.nom ||
+      currentUser.email ||
+      "Compte connecté";
+
+    element.innerHTML = `
+
+      <span class="userBadge">
+
+        👤
+        ${escapeHtml(label)}
+
+        ${
+          currentProfile?.role === "admin"
+            ? " · ADMIN"
+            : ""
+        }
+
+      </span>
+
+    `;
+
+  } else {
+
+    element.textContent =
+      "Non connecté";
+
+  }
+
+}
+
+
+/* =========================================================
+   CONNEXION
+   ========================================================= */
+
+function showAuth() {
+
+  hideHome();
+  showContent();
+
+  const content =
+    document.getElementById(
+      "content"
+    );
 
   if (!content) return;
 
-  const welcome = document.querySelector(".welcome");
-  const news = document.querySelector(".news");
-  const grid = document.querySelector(".grid");
-  const feature = document.querySelector(".feature");
-
-  if (welcome) welcome.hidden = true;
-  if (news) news.hidden = true;
-  if (grid) grid.hidden = true;
-  if (feature) feature.hidden = true;
-
-  content.hidden = false;
-
-  const events = getEvents();
 
   content.innerHTML = `
 
-    <button class="back" onclick="goHome()">
+    <button
+      class="back"
+      onclick="goHome()"
+    >
       ← Accueil
     </button>
 
     <h2>
-      🚌 Sorties & activités
+      🔐 Connexion CSE
     </h2>
 
+    <div
+      class="status"
+      id="authBadge"
+    >
+      ${
+        currentUser
+          ? "Compte connecté"
+          : "Non connecté"
+      }
+    </div>
+
     ${
-      events.length
+      currentUser
 
-      ? events.map(function(e) {
+        ? `
 
-          const available =
-            Number(e.places || 0) -
-            Number(e.registered || 0);
+          <div class="authBox">
 
-          return `
-            <div class="adminEvent">
+            <h3>
+              Compte connecté
+            </h3>
 
-              <strong>
-                ${escapeHtml(e.title)}
-              </strong>
+            <p>
+              ${escapeHtml(
+                currentUser.email || ""
+              )}
+            </p>
 
-              <small>
-                📅 ${escapeHtml(e.date)}
-                · 💶 ${escapeHtml(e.price)}
-                · 👥 ${available} place(s) disponible(s)
-              </small>
+            <p>
+              ${
+                currentProfile?.role === "admin"
 
-              <button
-                class="primary"
-                onclick="registerEvent(${e.id})"
-              >
-                📝 S'inscrire
-              </button>
+                  ? "✅ Vous êtes administrateur du CSE."
 
-            </div>
-          `;
+                  : "Compte salarié"
+              }
+            </p>
 
-        }).join("")
+            ${
+              currentProfile?.role === "admin"
 
-      : "<p>Aucune activité actuellement.</p>"
-    }
+                ? `
 
-  `;
-}
+                  <button
+                    class="adminBtn"
+                    onclick="adminDemo()"
+                  >
+                    ⚙️ Ouvrir l’administration
+                  </button>
 
+                `
 
-function registerEvent(id) {
+                : ""
+            }
 
-  const event = getEvents().find(function(x) {
-    return x.id === id;
-  });
+            <button
+              class="adminBtn danger"
+              onclick="signOut()"
+            >
+              Se déconnecter
+            </button>
 
-  if (!event) return;
+          </div>
 
-  if (event.registered >= event.places) {
-    alert("Cette activité est complète.");
-    return;
-  }
+        `
 
-  const content = document.getElementById("content");
+        : `
 
-  if (!content) return;
+          <div class="authBox">
 
-  const available =
-    Number(event.places) -
-    Number(event.registered);
+            <h3>
+              Connexion administrateur
+            </h3>
 
-  content.innerHTML = `
+            <p class="status">
+              Utilise l'adresse e-mail
+              et le mot de passe du compte
+              administrateur créé dans Supabase.
+            </p>
 
-    <button class="back" onclick="publicActivities()">
-      ← Activités
-    </button>
+            <form
+              onsubmit="loginAdmin(event)"
+            >
 
-    <h2>📝 Inscription</h2>
+              <label>
+                E-mail
 
-    <p>
-      <strong>${escapeHtml(event.title)}</strong>
-      <br>
-      ${escapeHtml(event.date)}
-      · ${escapeHtml(event.price)}
-    </p>
+                <input
+                  id="loginEmail"
+                  type="email"
+                  autocomplete="username"
+                  required
+                >
+              </label>
 
-    <form onsubmit="submitRegistration(event,${id})">
+              <label>
+                Mot de passe
 
-      <label>
-        Nom et prénom
-        <input
-          id="regName"
-          required
-        >
-      </label>
-
-      <label>
-        Nombre de personnes
-        <input
-          id="regPeople"
-          type="number"
-          min="1"
-          max="${available}"
-          value="1"
-          required
-        >
-      </label>
-
-      <label>
-        Téléphone
-        <input
-          id="regPhone"
-          inputmode="tel"
-        >
-      </label>
-
-      <button class="primary" type="submit">
-        Valider mon inscription
-      </button>
-
-    </form>
-  `;
-}
-
-
-function submitRegistration(ev, id) {
-
-  ev.preventDefault();
-
-  const events = getEvents();
-
-  const event = events.find(function(x) {
-    return x.id === id;
-  });
-
-  if (!event) return;
-
-  const name = document.getElementById("regName");
-  const peopleInput = document.getElementById("regPeople");
-  const phone = document.getElementById("regPhone");
-
-  if (!name || !peopleInput || !phone) return;
-
-  const people = Number(peopleInput.value);
-
-  if (
+                <input
+                  id="loginPassword"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                >
+              
