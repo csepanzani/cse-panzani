@@ -67,5 +67,22 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="app.js?v=2"></script>
+  <script>
+function showSection(key) {
+  document.querySelector(".welcome").hidden = true;
+  document.querySelector(".news").hidden = true;
+  document.querySelector(".grid").hidden = true;
+  document.querySelector(".feature").hidden = true;
+  document.getElementById("content").hidden = false;
+  document.getElementById("content").innerHTML =
+    "<button onclick=\"location.reload()\">← Accueil</button><h2>📢 " +
+    (key === "plus" ? "Plus" : "Actualités") +
+    "</h2><p>Le bouton fonctionne !</p>";
+}
+
+function goHome() {
+  location.reload();
+}
+  </script>
 </body>
 </html>
