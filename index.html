@@ -1,70 +1,94 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#08743b">
-<title>CSE Panzani</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSE Panzani</title>
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 
 <body>
 
-<header class="hero">
+<header class="top">
+
   <div class="brand">
-    <img src="logo.png" alt="Logo CSE Panzani">
+
+    <img src="logo.png" alt="CSE Panzani">
+
     <div>
       <h1>CSE PANZANI</h1>
       <p>Votre CSE, partout avec vous.</p>
     </div>
+
   </div>
+
+  <button class="bell" onclick="openPage('notifications')">
+    ♧
+    <b>3</b>
+  </button>
+
 </header>
+
 
 <main id="app">
 
-<section class="welcome">
-  <div>
+  <section class="welcome">
+
     <small>BIENVENUE</small>
-    <h2>Les infos du CSE<br>à portée de main.</h2>
-  </div>
-  <div class="date" id="date"></div>
-</section>
 
-<section class="news">
-  <div class="news-icon">📢</div>
-  <div>
-    <strong>Dernières actualités</strong>
-    <p>Retrouvez les nouveaux affichages et informations du CSE.</p>
-  </div>
-  <button onclick="openPage('actualites')">›</button>
-</section>
+    <h2>
+      Les infos du CSE<br>
+      à portée de main.
+    </h2>
 
-<div class="grid">
 
-<button class="card red" onclick="openPage('actualites')">
-  <b>📰</b>
-  <strong>ACTUALITÉS</strong>
-  <span>Affichage · CSE · RH · CSSCT</span>
-</button>
+    <button class="news" onclick="openPage('actualites')">
 
-<button class="card blue" onclick="openPage('billetterie')">
-  <b>🎟️</b>
-  <strong>BILLETTERIE</strong>
-  <span>Cinéma · Parcs · Spectacles</span>
-</button>
+      <span>📣</span>
 
-<button class="card green" onclick="openPage('sorties')">
-  <b>🚌</b>
-  <strong>SORTIES & VOYAGES</strong>
-  <span>Voyages · Ski · Journées</span>
-</button>
+      <div>
 
-<button class="card gold" onclick="openPage('offres')">
-  <b>🎁</b>
-  <strong>OFFRES CSE</strong>
-  <span>Promotions · Avantages</span>
-</button>
+        <strong>DERNIÈRES ACTUALITÉS</strong>
 
-<button class="card purple" onclick="openPage('agenda')">
-  <b>📅</b>
-  <strong>AGEN
+        <p>
+          Retrouvez les nouveaux affichages
+          et informations du CSE.
+        </p>
+
+      </div>
+
+      <b>›</b>
+
+    </button>
+
+  </section>
+
+
+  <section class="grid">
+
+
+    <button class="card red" onclick="openPage('actualites')">
+
+      <i>▤</i>
+
+      <div>
+        <strong>ACTUALITÉS</strong>
+
+        <span>
+          Affichage · CSE<br>
+          RH · CSSCT
+        </span>
+      </div>
+
+      <b>›</b>
+
+    </button>
+
+
+
+    <button class="card blue" onclick="openPage('billetterie')">
+
+      <i>▣</i>
+
+      <div>
+        <strong>BIL
