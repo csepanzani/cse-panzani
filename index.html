@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#08743b">
-  <title>CSE Panzani</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08743b">
+<title>CSE Panzani</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -18,15 +18,11 @@
       <p>Votre CSE, partout avec vous.</p>
     </div>
   </div>
-
-  <button class="bell" onclick="ouvrir('notifications')">
-    🔔<span>3</span>
-  </button>
 </header>
 
-<main>
+<main id="app">
 
-<section class="welcome" id="welcome">
+<section class="welcome">
   <div>
     <small>BIENVENUE</small>
     <h2>Les infos du CSE<br>à portée de main.</h2>
@@ -40,154 +36,35 @@
     <strong>Dernières actualités</strong>
     <p>Retrouvez les nouveaux affichages et informations du CSE.</p>
   </div>
-  <button onclick="ouvrir('actualites')">›</button>
+  <button onclick="openPage('actualites')">›</button>
 </section>
 
 <div class="grid">
 
-<button class="card red" onclick="ouvrir('actualites')">
+<button class="card red" onclick="openPage('actualites')">
   <b>📰</b>
   <strong>ACTUALITÉS</strong>
   <span>Affichage · CSE · RH · CSSCT</span>
 </button>
 
-<button class="card blue" onclick="ouvrir('billetterie')">
+<button class="card blue" onclick="openPage('billetterie')">
   <b>🎟️</b>
   <strong>BILLETTERIE</strong>
   <span>Cinéma · Parcs · Spectacles</span>
 </button>
 
-<button class="card green" onclick="ouvrir('sorties')">
+<button class="card green" onclick="openPage('sorties')">
   <b>🚌</b>
   <strong>SORTIES & VOYAGES</strong>
   <span>Voyages · Ski · Journées</span>
 </button>
 
-<button class="card gold" onclick="ouvrir('offres')">
+<button class="card gold" onclick="openPage('offres')">
   <b>🎁</b>
   <strong>OFFRES CSE</strong>
   <span>Promotions · Avantages</span>
 </button>
 
-<button class="card purple" onclick="ouvrir('agenda')">
+<button class="card purple" onclick="openPage('agenda')">
   <b>📅</b>
-  <strong>AGENDA</strong>
-  <span>Toutes les dates importantes</span>
-</button>
-
-<button class="card pink" onclick="ouvrir('inscriptions')">
-  <b>📝</b>
-  <strong>INSCRIPTIONS</strong>
-  <span>Participez aux activités</span>
-</button>
-
-<button class="card teal" onclick="ouvrir('documents')">
-  <b>📄</b>
-  <strong>DOCUMENTS</strong>
-  <span>Règlements · Infos · CR</span>
-</button>
-
-<button class="card dark" onclick="ouvrir('contact')">
-  <b>☎️</b>
-  <strong>CONTACT CSE</strong>
-  <span>Une question ? Contactez-nous</span>
-</button>
-
-</div>
-
-<section class="feature">
-  <span>⭐ À LA UNE</span>
-  <div>
-    <strong>Découvrez les prochaines activités du CSE</strong>
-    <small>Sorties · Voyages · Billetterie · Événements</small>
-  </div>
-  <button onclick="ouvrir('sorties')">›</button>
-</section>
-
-<section id="content" class="content" hidden></section>
-
-</main>
-
-<nav class="bottom">
-
-<button onclick="accueil()">⌂<small>Accueil</small></button>
-
-<button onclick="ouvrir('actualites')">▤<small>Actualités</small></button>
-
-<button onclick="ouvrir('agenda')">▣<small>Agenda</small></button>
-
-<button onclick="ouvrir('notifications')">
-  ◌<small>Notifications</small><i>3</i>
-</button>
-
-<button onclick="ouvrir('plus')">☰<small>Plus</small></button>
-
-</nav>
-
-<script>
-
-const pages = {
-
-  actualites: {
-    titre: "📢 Actualités",
-    texte: "Retrouvez ici toutes les actualités du CSE Panzani."
-  },
-
-  billetterie: {
-    titre: "🎟️ Billetterie",
-    texte: "Cinéma, parcs, spectacles et autres offres."
-  },
-
-  sorties: {
-    titre: "🚌 Sorties & Voyages",
-    texte: "Découvrez les prochaines sorties et voyages proposés par le CSE."
-  },
-
-  offres: {
-    titre: "🎁 Offres CSE",
-    texte: "Retrouvez toutes les promotions et avantages CSE."
-  },
-
-  agenda: {
-    titre: "📅 Agenda",
-    texte: "Toutes les dates importantes du CSE."
-  },
-
-  inscriptions: {
-    titre: "📝 Inscriptions",
-    texte: "Inscrivez-vous aux prochaines activités."
-  },
-
-  documents: {
-    titre: "📄 Documents",
-    texte: "Retrouvez les règlements, informations et comptes rendus."
-  },
-
-  contact: {
-    titre: "☎️ Contact CSE",
-    texte: "Une question ? Retrouvez ici les coordonnées du CSE."
-  },
-
-  notifications: {
-    titre: "🔔 Notifications",
-    texte: "Vous avez 3 nouvelles notifications."
-  },
-
-  plus: {
-    titre: "☰ Plus",
-    texte: "D'autres fonctionnalités du CSE seront disponibles ici."
-  }
-
-};
-
-
-function accueil() {
-
-  document.querySelector(".welcome").hidden = false;
-  document.querySelector(".news").hidden = false;
-  document.querySelector(".grid").hidden = false;
-  document.querySelector(".feature").hidden = false;
-
-  document.getElementById("content").hidden = true;
-
-  window.scrollTo({
+  <strong>AGEN
