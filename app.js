@@ -1,90 +1,44 @@
 /* =========================================================
    CSE PANZANI - APPLICATION
-   Navigation + activités + inscriptions + connexion admin
+   Version Supabase : contenus + activités + inscriptions
    ========================================================= */
 
 const pages = {
-  actualites: [
-    "Actualités",
-    "📢",
-    "Les dernières informations du CSE, les affichages, les communications RH, CGT et CSSCT."
-  ],
-  billetterie: [
-    "Billetterie",
-    "🎟️",
-    "Cinémas, parcs d'attractions, spectacles et cartes cadeaux."
-  ],
-  sorties: [
-    "Sorties & voyages",
-    "🚌",
-    "Retrouvez les voyages, sorties, week-ends et journées organisés par le CSE."
-  ],
-  offres: [
-    "Offres CSE",
-    "🎁",
-    "Promotions et avantages négociés pour les salariés."
-  ],
-  agenda: [
-    "Agenda",
-    "📅",
-    "Toutes les dates importantes : inscriptions, sorties, événements et échéances."
-  ],
-  inscriptions: [
-    "Inscriptions",
-    "📝",
-    "Inscrivez-vous aux prochaines activités directement depuis votre téléphone."
-  ],
-  documents: [
-    "Documents",
-    "📄",
-    "Règlements, comptes rendus, fiches pratiques et informations utiles."
-  ],
-  contact: [
-    "Contacter le CSE",
-    "☎️",
-    "Une question ? Retrouvez ici les coordonnées et horaires du CSE."
-  ],
-  notifications: [
-    "Notifications",
-    "🔔",
-    "Retrouvez ici les dernières notifications du CSE."
-  ],
-  plus: [
-    "Plus",
-    "☰",
-    "Paramètres et espace administrateur."
-  ]
+  actualites: ["Actualités", "📢", "Les dernières informations du CSE."],
+  billetterie: ["Billetterie", "🎟️", "Cinémas, parcs, spectacles et cartes cadeaux."],
+  sorties: ["Sorties & voyages", "🚌", "Les activités et voyages proposés par le CSE."],
+  offres: ["Offres CSE", "🎁", "Promotions et avantages négociés pour les salariés."],
+  agenda: ["Agenda", "📅", "Les prochaines dates importantes du CSE."],
+  inscriptions: ["Inscriptions", "📝", "Les inscriptions enregistrées dans l'application."],
+  documents: ["Documents", "📄", "Règlements, comptes rendus et documents utiles."],
+  contact: ["Contacter le CSE", "☎️", "Les coordonnées du CSE."],
+  notifications: ["Notifications", "🔔", "Les dernières notifications du CSE."],
+  plus: ["Plus", "☰", "Connexion et espace administrateur."]
 };
 
+let supabaseClient = null;
+let currentUser = null;
+let currentProfile = null;
 
-/* =========================================================
-   OUTILS
-   ========================================================= */
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>'"]/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;"
+  }[character]));
+}
 
 function hideHome() {
-  const elements = [
-    ".welcome",
-    ".news",
-    ".grid",
-    ".feature"
-  ];
-
-  elements.forEach(selector => {
+  [".welcome", ".news", ".grid", ".feature"].forEach(selector => {
     const el = document.querySelector(selector);
     if (el) el.hidden = true;
   });
 }
 
-
 function showHome() {
-  const elements = [
-    ".welcome",
-    ".news",
-    ".grid",
-    ".feature"
-  ];
-
-  elements.forEach(selector => {
+  [".welcome", ".news", ".grid", ".feature"].forEach(selector => {
     const el = document.querySelector(selector);
     if (el) el.hidden = false;
   });
@@ -96,569 +50,289 @@ function showHome() {
     content.innerHTML = "";
   }
 
-  document
-    .querySelectorAll(".bottom button")
-    .forEach(button => button.classList.remove("active"));
+  document.querySelectorAll(".bottom button").forEach(b => {
+    b.classList.remove("active");
+  });
 
-  const firstButton = document.querySelector(".bottom button");
+  const home = document.querySelector(".bottom button");
 
-  if (firstButton) {
-    firstButton.classList.add("active");
+  if (home) {
+    home.classList.add("active");
   }
 }
-
 
 function goHome() {
   showHome();
 }
 
+function setContent(html) {
+  hideHome();
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(
-    /[&<>'"]/g,
-    character => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      "'": "&#39;",
-      '"': "&quot;"
-    }[character])
+  const content = document.getElementById("content");
+
+  if (!content) return null;
+
+  content.hidden = false;
+  content.innerHTML = html;
+
+  document.querySelectorAll(".bottom button").forEach(b => {
+    b.classList.remove("active");
+  });
+
+  return content;
+}
+
+function loading(title) {
+  setContent(`
+    <button class="back" onclick="goHome()">← Accueil</button>
+    <h2>${escapeHtml(title)}</h2>
+
+    <div class="authBox">
+      <p>⏳ Chargement des informations du CSE…</p>
+    </div>
+  `);
+}
+
+function errorBox(message) {
+  return `
+    <div class="authBox">
+      <p>⚠️ ${escapeHtml(message)}</p>
+    </div>
+  `;
+}
+
+function formatDate(value) {
+  if (!value) return "";
+
+  const d = new Date(value);
+
+  if (Number.isNaN(d.getTime())) {
+    return escapeHtml(value);
+  }
+
+  return escapeHtml(
+    new Intl.DateTimeFormat("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }).format(d)
   );
+}
+
+function displayDate() {
+  const el = document.getElementById("date");
+
+  if (!el) return;
+
+  el.textContent = new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(new Date());
 }
 
 
 /* =========================================================
-   NAVIGATION
+   NAVIGATION DES BOUTONS
    ========================================================= */
 
 function showSection(key) {
 
   if (key === "sorties") {
-    publicActivities();
-    return;
+    return publicActivities();
+  }
+
+  if (key === "actualites") {
+    return showActualites();
+  }
+
+  if (key === "billetterie") {
+    return showBilletterie();
+  }
+
+  if (key === "offres") {
+    return showOffres();
+  }
+
+  if (key === "agenda") {
+    return showAgenda();
+  }
+
+  if (key === "inscriptions") {
+    return showInscriptions();
+  }
+
+  if (key === "documents") {
+    return showDocuments();
+  }
+
+  if (key === "notifications") {
+    return showNotifications();
+  }
+
+  if (key === "contact") {
+    return showContact();
   }
 
   if (key === "plus") {
-    showAuth();
+    return showAuth();
+  }
+
+  return showActualites();
+}
+
+
+/* =========================================================
+   ACTUALITÉS
+   ========================================================= */
+
+async function showActualites() {
+
+  loading("📢 Actualités");
+
+  if (!supabaseClient) {
+
+    setContent(`
+      <button class="back" onclick="goHome()">← Accueil</button>
+      <h2>📢 Actualités</h2>
+      ${errorBox("Supabase n'est pas configuré.")}
+    `);
+
     return;
   }
 
-  hideHome();
+  const { data, error } = await supabaseClient
+    .from("actualites")
+    .select("id,titre,contenu,image_url,created_at")
+    .order("created_at", { ascending: false });
 
-  const content = document.getElementById("content");
+  if (error) {
 
-  if (!content) return;
+    setContent(`
+      <button class="back" onclick="goHome()">← Accueil</button>
+      <h2>📢 Actualités</h2>
+      ${errorBox(
+        "Impossible de charger les actualités : " + error.message
+      )}
+    `);
 
-  content.hidden = false;
-
-  const page = pages[key] || pages.actualites;
-
-  content.innerHTML = `
-    <button class="back" onclick="goHome()">← Accueil</button>
-
-    <h2>${page[1]} ${page[0]}</h2>
-
-    <p>${page[2]}</p>
-
-    <div class="authBox">
-      <p>
-        Cette rubrique sera prochainement alimentée
-        avec les informations réelles du CSE.
-      </p>
-    </div>
-  `;
-
-  document
-    .querySelectorAll(".bottom button")
-    .forEach(button => button.classList.remove("active"));
-}
-
-
-/* =========================================================
-   DATE
-   ========================================================= */
-
-function displayDate() {
-
-  const dateElement = document.getElementById("date");
-
-  if (!dateElement) return;
-
-  dateElement.textContent =
-    new Intl.DateTimeFormat("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    }).format(new Date());
-}
-
-
-/* =========================================================
-   ACTIVITÉS
-   ========================================================= */
-
-const demoEvents = [
-  {
-    id: 1,
-    title: "Week-end ski – Saint-Jean-Montclar",
-    date: "22–24 janvier 2027",
-    price: "130 € adulte",
-    places: 18,
-    registered: 0
-  },
-  {
-    id: 2,
-    title: "Journée Ok Corral",
-    date: "11 octobre 2026",
-    price: "20 € adulte",
-    places: 50,
-    registered: 0
-  },
-  {
-    id: 3,
-    title: "Disneyland Paris",
-    date: "13–15 novembre 2026",
-    price: "Selon tarif CSE",
-    places: 50,
-    registered: 0
+    return;
   }
-];
-
-
-function getEvents() {
-
-  try {
-
-    const saved = localStorage.getItem("cse_events");
-
-    if (saved) {
-      return JSON.parse(saved);
-    }
-
-  } catch (error) {
-    console.warn("Impossible de lire les activités.", error);
-  }
-
-  localStorage.setItem(
-    "cse_events",
-    JSON.stringify(demoEvents)
-  );
-
-  return demoEvents;
-}
-
-
-function saveEvents(events) {
-
-  localStorage.setItem(
-    "cse_events",
-    JSON.stringify(events)
-  );
-}
-
-
-/* =========================================================
-   AFFICHAGE DES ACTIVITÉS
-   ========================================================= */
-
-function publicActivities() {
-
-  hideHome();
-
-  const content = document.getElementById("content");
-
-  if (!content) return;
-
-  content.hidden = false;
-
-  const events = getEvents();
 
   let html = `
     <button class="back" onclick="goHome()">← Accueil</button>
-
-    <h2>🚌 Sorties & activités</h2>
-
-    <p>
-      Découvrez les prochaines activités proposées par le CSE.
-    </p>
+    <h2>📢 Actualités</h2>
   `;
 
-  if (events.length === 0) {
+  if (!data?.length) {
 
     html += `
       <div class="authBox">
-        <p>Aucune activité publiée pour le moment.</p>
+        <p>Aucune actualité publiée pour le moment.</p>
       </div>
     `;
 
   } else {
 
-    events.forEach(event => {
-
-      const available =
-        Math.max(0, event.places - event.registered);
+    data.forEach(item => {
 
       html += `
-        <div class="adminEvent">
+        <article class="adminEvent">
 
           <strong>
-            ${escapeHtml(event.title)}
+            ${escapeHtml(item.titre)}
           </strong>
 
-          <small>
-            📅 ${escapeHtml(event.date)}
-          </small>
-
-          <small>
-            💶 ${escapeHtml(event.price)}
-          </small>
-
-          <small>
-            👥 ${available} place(s) disponible(s)
-          </small>
-
           ${
-            available > 0
-              ? `
-                <button
-                  class="primary"
-                  onclick="registerEvent(${event.id})"
-                >
-                  📝 S'inscrire
-                </button>
-              `
-              : `
-                <button
-                  class="adminBtn"
-                  disabled
-                >
-                  Activité complète
-                </button>
-              `
+            item.created_at
+              ? `<small>📅 ${formatDate(item.created_at)}</small>`
+              : ""
           }
 
-        </div>
+          ${
+            item.image_url
+              ? `
+                <img
+                  src="${escapeHtml(item.image_url)}"
+                  alt=""
+                  style="
+                    width:100%;
+                    border-radius:12px;
+                    margin:8px 0;
+                    max-height:260px;
+                    object-fit:cover;
+                  "
+                >
+              `
+              : ""
+          }
+
+          <p>
+            ${escapeHtml(item.contenu || "")}
+          </p>
+
+        </article>
       `;
     });
   }
 
-  content.innerHTML = html;
+  setContent(html);
 }
 
 
 /* =========================================================
-   INSCRIPTION
+   BILLETTERIE
    ========================================================= */
 
-function registerEvent(id) {
+async function showBilletterie() {
 
-  const event = getEvents().find(
-    item => item.id === id
+  await showFilteredActualites(
+    "🎟️ Billetterie",
+    [
+      "billetterie",
+      "cinéma",
+      "cinema",
+      "parc",
+      "spectacle",
+      "carte cadeau",
+      "tickets",
+      "ticket"
+    ]
   );
-
-  if (!event) return;
-
-  const available =
-    event.places - event.registered;
-
-  if (available <= 0) {
-
-    alert("Cette activité est complète.");
-
-    return;
-  }
-
-  const content =
-    document.getElementById("content");
-
-  if (!content) return;
-
-  content.innerHTML = `
-    <button
-      class="back"
-      onclick="publicActivities()"
-    >
-      ← Activités
-    </button>
-
-    <h2>📝 Inscription</h2>
-
-    <div class="authBox">
-
-      <h3>
-        ${escapeHtml(event.title)}
-      </h3>
-
-      <p>
-        📅 ${escapeHtml(event.date)}
-      </p>
-
-      <p>
-        💶 ${escapeHtml(event.price)}
-      </p>
-
-      <form
-        onsubmit="submitRegistration(event, ${event.id})"
-      >
-
-        <label>
-          Nom et prénom
-
-          <input
-            id="regName"
-            type="text"
-            required
-            autocomplete="name"
-          >
-        </label>
-
-        <label>
-          Nombre de personnes
-
-          <input
-            id="regPeople"
-            type="number"
-            min="1"
-            max="${available}"
-            value="1"
-            required
-          >
-        </label>
-
-        <label>
-          Téléphone
-
-          <input
-            id="regPhone"
-            type="tel"
-            inputmode="tel"
-            autocomplete="tel"
-          >
-        </label>
-
-        <button
-          class="primary"
-          type="submit"
-        >
-          ✅ Valider mon inscription
-        </button>
-
-      </form>
-
-    </div>
-  `;
-}
-
-
-function submitRegistration(formEvent, id) {
-
-  formEvent.preventDefault();
-
-  const events = getEvents();
-
-  const event = events.find(
-    item => item.id === id
-  );
-
-  if (!event) return;
-
-  const name =
-    document.getElementById("regName").value.trim();
-
-  const people =
-    Number(
-      document.getElementById("regPeople").value
-    );
-
-  const phone =
-    document.getElementById("regPhone").value.trim();
-
-  const available =
-    event.places - event.registered;
-
-  if (!name) {
-
-    alert("Merci de renseigner votre nom.");
-
-    return;
-  }
-
-  if (
-    !Number.isInteger(people) ||
-    people < 1 ||
-    people > available
-  ) {
-
-    alert("Le nombre de personnes est incorrect.");
-
-    return;
-  }
-
-  const key = "cse_registrations_" + id;
-
-  let registrations = [];
-
-  try {
-    registrations =
-      JSON.parse(
-        localStorage.getItem(key) || "[]"
-      );
-  } catch (error) {
-    registrations = [];
-  }
-
-  registrations.push({
-    name: name,
-    people: people,
-    phone: phone,
-    date: new Date().toISOString()
-  });
-
-  localStorage.setItem(
-    key,
-    JSON.stringify(registrations)
-  );
-
-  event.registered += people;
-
-  saveEvents(events);
-
-  const content =
-    document.getElementById("content");
-
-  content.innerHTML = `
-    <button
-      class="back"
-      onclick="goHome()"
-    >
-      ← Accueil
-    </button>
-
-    <div class="authBox">
-
-      <h2>✅ Inscription enregistrée</h2>
-
-      <p>
-        Votre inscription pour
-        <strong>${escapeHtml(event.title)}</strong>
-        a bien été enregistrée.
-      </p>
-
-      <p>
-        👤 ${escapeHtml(name)}
-        <br>
-        👥 ${people} personne(s)
-      </p>
-
-      <button
-        class="primary"
-        onclick="publicActivities()"
-      >
-        Voir les activités
-      </button>
-
-    </div>
-  `;
 }
 
 
 /* =========================================================
-   ADMINISTRATION
+   OFFRES CSE
    ========================================================= */
 
-function adminDemo() {
+async function showOffres() {
 
-  hideHome();
-
-  const content =
-    document.getElementById("content");
-
-  if (!content) return;
-
-  content.hidden = false;
-
-  renderAdmin();
+  await showFilteredActualites(
+    "🎁 Offres CSE",
+    [
+      "offre",
+      "promotion",
+      "avantage",
+      "réduction",
+      "reduction",
+      "partenaire"
+    ]
+  );
 }
 
 
-function renderAdmin() {
+/* =========================================================
+   FILTRE DES ACTUALITÉS
+   ========================================================= */
 
-  const content =
-    document.getElementById("content");
+async function showFilteredActualites(title, keywords) {
 
-  if (!content) return;
+  loading(title);
 
-  const events = getEvents();
+  if (!supabaseClient) {
 
-  const totalRegistered =
-    events.reduce(
-      (total, event) =>
-        total + Number(event.registered || 0),
-      0
-    );
-
-  const totalPlaces =
-    events.reduce(
-      (total, event) =>
-        total + Number(event.places || 0),
-      0
-    );
-
-  content.innerHTML = `
-    <button
-      class="back"
-      onclick="goHome()"
-    >
-      ← Accueil
-    </button>
-
-    <h2>⚙️ Espace administrateur</h2>
-
-    <p>
-      <strong>
-        Gestion des activités du CSE
-      </strong>
-    </p>
-
-    <div class="adminStats">
-
-      <div>
-        <b>${events.length}</b>
-        <small>Activités</small>
-      </div>
-
-      <div>
-        <b>${totalRegistered}</b>
-        <small>Inscrits</small>
-      </div>
-
-      <div>
-        <b>${totalPlaces}</b>
-        <small>Places</small>
-      </div>
-
-    </div>
-
-    <button
-      class="adminBtn"
-      onclick="showCreateEvent()"
-    >
-      ➕ Créer une activité
-    </button>
-
-    <h3>Activités publiées</h3>
-
-    <div>
-
-      ${
-        events.length
-          ? events.map(event => `
-              <div class="adminEvent">
-
-                <strong>
-                  ${escapeHtml(event.title)}
-                </strong>
-
-                <small>
-                  📅 ${escapeHtml(event.date)}
-     </
+    setContent(`
+      <button class="back" onclick="goHome()">← Accueil</button>
+      <h2>${title}</h2>
+      ${errorBox("Supabase n'est
