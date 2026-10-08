@@ -543,7 +543,72 @@ body {
 
   font-size: 31px;
 }
+/* =========================
+   CORRECTION NAVIGATION
+========================= */
 
+button {
+  font-family: inherit;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+body > nav.bottom-nav {
+  position: fixed !important;
+  left: 12px !important;
+  right: 12px !important;
+  bottom: 12px !important;
+
+  width: auto !important;
+  height: 76px !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+
+  align-items: center !important;
+  justify-content: space-around !important;
+
+  background: rgba(255,255,255,.97) !important;
+
+  border: 1px solid #e1e5e3 !important;
+  border-radius: 28px !important;
+
+  box-shadow: 0 5px 25px rgba(0,0,0,.15) !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  z-index: 10000 !important;
+}
+
+body > nav.bottom-nav > .nav-button {
+  width: 20% !important;
+  min-width: 20% !important;
+  max-width: 20% !important;
+  height: 68px !important;
+
+  flex: 0 0 20% !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+
+  background: transparent !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  color: #646d68;
+}
 /* =========================
    NAVIGATION BASSE
 ========================= */
