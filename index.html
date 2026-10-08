@@ -18,11 +18,15 @@
       <p>Votre CSE, partout avec vous.</p>
     </div>
   </div>
+
+  <button class="bell" onclick="ouvrir('notifications')">
+    🔔<span>3</span>
+  </button>
 </header>
 
 <main>
 
-<section class="welcome">
+<section class="welcome" id="welcome">
   <div>
     <small>BIENVENUE</small>
     <h2>Les infos du CSE<br>à portée de main.</h2>
@@ -41,7 +45,7 @@
 
 <div class="grid">
 
-<button class="card red" onclick="document.getElementById('content').style.display='block'; document.getElementById('content').innerHTML='<h2>📢 ACTUALITÉS</h2><p>Ça fonctionne !</p>';">
+<button class="card red" onclick="ouvrir('actualites')">
   <b>📰</b>
   <strong>ACTUALITÉS</strong>
   <span>Affichage · CSE · RH · CSSCT</span>
@@ -112,7 +116,9 @@
 
 <button onclick="ouvrir('agenda')">▣<small>Agenda</small></button>
 
-<button onclick="ouvrir('notifications')">◌<small>Notifications</small><i>3</i></button>
+<button onclick="ouvrir('notifications')">
+  ◌<small>Notifications</small><i>3</i>
+</button>
 
 <button onclick="ouvrir('plus')">☰<small>Plus</small></button>
 
@@ -120,67 +126,68 @@
 
 <script>
 
+const pages = {
+
+  actualites: {
+    titre: "📢 Actualités",
+    texte: "Retrouvez ici toutes les actualités du CSE Panzani."
+  },
+
+  billetterie: {
+    titre: "🎟️ Billetterie",
+    texte: "Cinéma, parcs, spectacles et autres offres."
+  },
+
+  sorties: {
+    titre: "🚌 Sorties & Voyages",
+    texte: "Découvrez les prochaines sorties et voyages proposés par le CSE."
+  },
+
+  offres: {
+    titre: "🎁 Offres CSE",
+    texte: "Retrouvez toutes les promotions et avantages CSE."
+  },
+
+  agenda: {
+    titre: "📅 Agenda",
+    texte: "Toutes les dates importantes du CSE."
+  },
+
+  inscriptions: {
+    titre: "📝 Inscriptions",
+    texte: "Inscrivez-vous aux prochaines activités."
+  },
+
+  documents: {
+    titre: "📄 Documents",
+    texte: "Retrouvez les règlements, informations et comptes rendus."
+  },
+
+  contact: {
+    titre: "☎️ Contact CSE",
+    texte: "Une question ? Retrouvez ici les coordonnées du CSE."
+  },
+
+  notifications: {
+    titre: "🔔 Notifications",
+    texte: "Vous avez 3 nouvelles notifications."
+  },
+
+  plus: {
+    titre: "☰ Plus",
+    texte: "D'autres fonctionnalités du CSE seront disponibles ici."
+  }
+
+};
+
+
 function accueil() {
+
   document.querySelector(".welcome").hidden = false;
   document.querySelector(".news").hidden = false;
   document.querySelector(".grid").hidden = false;
   document.querySelector(".feature").hidden = false;
+
   document.getElementById("content").hidden = true;
-}
 
-function ouvrir(page) {
-
-  var titres = {
-    actualites: "📢 Actualités",
-    billetterie: "🎟️ Billetterie",
-    sorties: "🚌 Sorties & Voyages",
-    offres: "🎁 Offres CSE",
-    agenda: "📅 Agenda",
-    inscriptions: "📝 Inscriptions",
-    documents: "📄 Documents",
-    contact: "☎️ Contact CSE",
-    notifications: "🔔 Notifications",
-    plus: "☰ Plus"
-  };
-
-  var textes = {
-    actualites: "Retrouvez ici toutes les actualités du CSE Panzani.",
-    billetterie: "Cinéma, parcs, spectacles et autres offres.",
-    sorties: "Découvrez les prochaines sorties et voyages proposés par le CSE.",
-    offres: "Retrouvez toutes les promotions et avantages CSE.",
-    agenda: "Toutes les dates importantes du CSE.",
-    inscriptions: "Inscrivez-vous aux prochaines activités.",
-    documents: "Retrouvez les règlements, informations et comptes rendus.",
-    contact: "Une question ? Retrouvez ici les coordonnées du CSE.",
-    notifications: "Vous avez 3 nouvelles notifications.",
-    plus: "D'autres fonctionnalités du CSE seront disponibles ici."
-  };
-
-  document.querySelector(".welcome").hidden = true;
-  document.querySelector(".news").hidden = true;
-  document.querySelector(".grid").hidden = true;
-  document.querySelector(".feature").hidden = true;
-
-  var contenu = document.getElementById("content");
-
-  contenu.hidden = false;
-
-  contenu.innerHTML =
-    "<button onclick=\"accueil()\">← Accueil</button>" +
-    "<h2>" + titres[page] + "</h2>" +
-    "<p>" + textes[page] + "</p>";
-  contenu.scrollIntoView({behavior:"smooth"});
-}
-
-document.getElementById("date").textContent =
-  new Date().toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  });
-
-</script>
-
-</body>
-</html>
+  window.scrollTo({
