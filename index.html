@@ -169,6 +169,7 @@ function ouvrir(page) {
     "<button onclick=\"accueil()\">← Accueil</button>" +
     "<h2>" + titres[page] + "</h2>" +
     "<p>" + textes[page] + "</p>";
+  contenu.scrollIntoView({behavior:"smooth"});
 }
 
 document.getElementById("date").textContent =
