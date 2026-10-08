@@ -4,3 +4,13 @@
 
 .adminStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:15px 0}.adminStats div{background:#f1f7f3;border-radius:12px;padding:12px;text-align:center}.adminStats b{display:block;font-size:22px;color:#08743b}.adminStats small{font-size:10px;color:#65736b}.adminEvent{background:#f8faf9;border:1px solid #e2e8e4;border-radius:14px;padding:14px;margin:10px 0}.adminEvent strong{display:block}.adminEvent small{display:block;color:#65736b;margin:6px 0 10px}.adminEvent button{border:0;background:#e8efeb;border-radius:9px;padding:8px;margin:3px;font-size:12px}.adminEvent .primary{background:#08743b;color:white}label{display:block;font-weight:700;margin:12px 0;font-size:13px}input{display:block;width:100%;margin-top:6px;border:1px solid #ccd7d1;border-radius:10px;padding:12px;font-size:15px}form .primary,.primary{border:0;background:#08743b;color:#fff;border-radius:10px;padding:13px 16px;font-weight:700;font-size:14px}
 .authBox{margin-top:16px;padding:16px;background:#f5f8f6;border-radius:14px}.authBox h3{margin-top:0;color:#08743b}.status{font-size:12px;color:#65736b;margin:8px 0}.danger{background:#d71920!important}.userBadge{display:inline-block;background:#e8f3ec;color:#08743b;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700}
+.card {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 999 !important;
+}
+
+.card::before,
+.card::after {
+  pointer-events: none !important;
+}
