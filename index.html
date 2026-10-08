@@ -9,80 +9,251 @@
   <link rel="stylesheet" href="style.css">
   <title>CSE Panzani</title>
 </head>
+
 <body>
-  <header class="hero">
-    <div class="brand">
-      <img src="logo.png" alt="Logo CSE Panzani">
-      <div>
-        <h1>CSE PANZANI</h1>
-        <p>Votre CSE, partout avec vous.</p>
-      </div>
+
+<header class="hero">
+  <div class="brand">
+    <img src="logo.png" alt="Logo CSE Panzani">
+    <div>
+      <h1>CSE PANZANI</h1>
+      <p>Votre CSE, partout avec vous.</p>
     </div>
-    <button class="bell" aria-label="Notifications">🔔<span>3</span></button>
-  </header>
+  </div>
 
-  <main>
-    <section class="welcome">
-      <div>
-        <small>BIENVENUE</small>
-        <h2>Les infos du CSE<br>à portée de main.</h2>
-      </div>
-      <div class="date" id="date"></div>
-    </section>
+  <button class="bell" id="notificationsBtn">
+    🔔<span>3</span>
+  </button>
+</header>
 
-    <section class="news">
-      <div class="news-icon">📢</div>
-      <div><strong>Dernières actualités</strong><p>Retrouvez les nouveaux affichages et informations du CSE.</p></div>
-      <button onclick="showSection('actualites')">›</button>
-    </section>
+<main>
 
-    <div class="grid">
-      <button class="card red" onclick="alert(typeof showSection)"><b>📰</b><strong>ACTUALITÉS</strong><span>Affichage · CSE · RH · CSSCT</span></button>
-      <button class="card blue" onclick="showSection('billetterie')"><b>🎟️</b><strong>BILLETTERIE</strong><span>Cinéma · Parcs · Spectacles</span></button>
-      <button class="card green" onclick="showSection('sorties')"><b>🚌</b><strong>SORTIES & VOYAGES</strong><span>Voyages · Ski · Journées</span></button>
-      <button class="card gold" onclick="showSection('offres')"><b>🎁</b><strong>OFFRES CSE</strong><span>Promotions · Avantages</span></button>
-      <button class="card purple" onclick="showSection('agenda')"><b>📅</b><strong>AGENDA</strong><span>Toutes les dates importantes</span></button>
-      <button class="card pink" onclick="showSection('inscriptions')"><b>📝</b><strong>INSCRIPTIONS</strong><span>Participez aux activités</span></button>
-      <button class="card teal" onclick="showSection('documents')"><b>📄</b><strong>DOCUMENTS</strong><span>Règlements · Infos · CR</span></button>
-      <button class="card dark" onclick="showSection('contact')"><b>☎️</b><strong>CONTACT CSE</strong><span>Une question ? Contactez-nous</span></button>
+  <section class="welcome" id="welcome">
+    <div>
+      <small>BIENVENUE</small>
+      <h2>Les infos du CSE<br>à portée de main.</h2>
     </div>
+    <div class="date" id="date"></div>
+  </section>
 
-    <section class="feature">
-      <span>⭐ À LA UNE</span>
-      <div><strong>Découvrez les prochaines activités du CSE</strong><small>Sorties · Voyages · Billetterie · Événements</small></div>
-      <button onclick="showSection('sorties')">›</button>
-    </section>
+  <section class="news">
+    <div class="news-icon">📢</div>
+    <div>
+      <strong>Dernières actualités</strong>
+      <p>Retrouvez les nouveaux affichages et informations du CSE.</p>
+    </div>
+    <button data-page="actualites">›</button>
+  </section>
 
-    <section id="content" class="content" hidden></section>
-  </main>
+  <div class="grid">
 
-  <nav class="bottom">
-    <button class="active" onclick="goHome()">⌂<small>Accueil</small></button>
-    <button onclick="alert('TEST CLIC')">▤<small>Actualités</small></button>
-    <button onclick="showSection('agenda')">▣<small>Agenda</small></button>
-    <button onclick="showSection('notifications')">◌<small>Notifications</small><i>3</i></button>
-    <button onclick="showSection('plus')">☰<small>Plus</small></button>
-  </nav>
+    <button class="card red" data-page="actualites">
+      <b>📰</b>
+      <strong>ACTUALITÉS</strong>
+      <span>Affichage · CSE · RH · CSSCT</span>
+    </button>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script src="app.js?v=2"></script>
-  <script>
-function showSection(key) {
-  document.querySelector(".welcome").hidden = true;
-  document.querySelector(".news").hidden = true;
-  document.querySelector(".grid").hidden = true;
-  document.querySelector(".feature").hidden = true;
-  document.getElementById("content").hidden = false;
-  document.getElementById("content").innerHTML =
-    "<button onclick=\"location.reload()\">← Accueil</button><h2>📢 " +
-    (key === "plus" ? "Plus" : "Actualités") +
-    "</h2><p>Le bouton fonctionne !</p>";
+    <button class="card blue" data-page="billetterie">
+      <b>🎟️</b>
+      <strong>BILLETTERIE</strong>
+      <span>Cinéma · Parcs · Spectacles</span>
+    </button>
+
+    <button class="card green" data-page="sorties">
+      <b>🚌</b>
+      <strong>SORTIES & VOYAGES</strong>
+      <span>Voyages · Ski · Journées</span>
+    </button>
+
+    <button class="card gold" data-page="offres">
+      <b>🎁</b>
+      <strong>OFFRES CSE</strong>
+      <span>Promotions · Avantages</span>
+    </button>
+
+    <button class="card purple" data-page="agenda">
+      <b>📅</b>
+      <strong>AGENDA</strong>
+      <span>Toutes les dates importantes</span>
+    </button>
+
+    <button class="card pink" data-page="inscriptions">
+      <b>📝</b>
+      <strong>INSCRIPTIONS</strong>
+      <span>Participez aux activités</span>
+    </button>
+
+    <button class="card teal" data-page="documents">
+      <b>📄</b>
+      <strong>DOCUMENTS</strong>
+      <span>Règlements · Infos · CR</span>
+    </button>
+
+    <button class="card dark" data-page="contact">
+      <b>☎️</b>
+      <strong>CONTACT CSE</strong>
+      <span>Une question ? Contactez-nous</span>
+    </button>
+
+  </div>
+
+  <section class="feature">
+    <span>⭐ À LA UNE</span>
+    <div>
+      <strong>Découvrez les prochaines activités du CSE</strong>
+      <small>Sorties · Voyages · Billetterie · Événements</small>
+    </div>
+    <button data-page="sorties">›</button>
+  </section>
+
+  <section id="content" class="content" hidden></section>
+
+</main>
+
+<nav class="bottom">
+
+  <button class="active" data-page="accueil">
+    ⌂
+    <small>Accueil</small>
+  </button>
+
+  <button data-page="actualites">
+    ▤
+    <small>Actualités</small>
+  </button>
+
+  <button data-page="agenda">
+    ▣
+    <small>Agenda</small>
+  </button>
+
+  <button data-page="notifications">
+    ◌
+    <small>Notifications</small>
+    <i>3</i>
+  </button>
+
+  <button data-page="plus">
+    ☰
+    <small>Plus</small>
+  </button>
+
+</nav>
+
+<script>
+const pages = {
+  actualites: {
+    title: "📢 Actualités",
+    text: "Retrouvez ici toutes les actualités du CSE Panzani."
+  },
+
+  billetterie: {
+    title: "🎟️ Billetterie",
+    text: "Cinéma, parcs, spectacles et autres offres."
+  },
+
+  sorties: {
+    title: "🚌 Sorties & Voyages",
+    text: "Découvrez les prochaines sorties et voyages proposés par le CSE."
+  },
+
+  offres: {
+    title: "🎁 Offres CSE",
+    text: "Retrouvez toutes les promotions et avantages CSE."
+  },
+
+  agenda: {
+    title: "📅 Agenda",
+    text: "Toutes les dates importantes du CSE."
+  },
+
+  inscriptions: {
+    title: "📝 Inscriptions",
+    text: "Inscrivez-vous aux prochaines activités."
+  },
+
+  documents: {
+    title: "📄 Documents",
+    text: "Retrouvez les règlements, informations et comptes rendus."
+  },
+
+  contact: {
+    title: "☎️ Contact CSE",
+    text: "Une question ? Retrouvez ici les coordonnées du CSE."
+  },
+
+  notifications: {
+    title: "🔔 Notifications",
+    text: "Vous avez 3 nouvelles notifications."
+  },
+
+  plus: {
+    title: "☰ Plus",
+    text: "D'autres fonctionnalités du CSE seront disponibles ici."
+  }
+};
+
+const accueil = document.querySelector(".welcome");
+const news = document.querySelector(".news");
+const grid = document.querySelector(".grid");
+const feature = document.querySelector(".feature");
+const content = document.getElementById("content");
+
+function afficherPage(page) {
+
+  if (page === "accueil") {
+    accueil.hidden = false;
+    news.hidden = false;
+    grid.hidden = false;
+    feature.hidden = false;
+    content.hidden = true;
+    content.innerHTML = "";
+    return;
+  }
+
+  const data = pages[page];
+
+  if (!data) return;
+
+  accueil.hidden = true;
+  news.hidden = true;
+  grid.hidden = true;
+  feature.hidden = true;
+
+  content.hidden = false;
+
+  content.innerHTML = `
+    <button class="back" id="backBtn">← Accueil</button>
+    <h2>${data.title}</h2>
+    <p>${data.text}</p>
+  `;
+
+  document.getElementById("backBtn").addEventListener("click", function() {
+    afficherPage("accueil");
+  });
 }
 
-function goHome() {
-  location.reload();
-}
-  </script>
+document.querySelectorAll("[data-page]").forEach(function(button) {
+
+  button.addEventListener("click", function() {
+
+    const page = button.dataset.page;
+
+    afficherPage(page);
+
+  });
+
+});
+
+document.getElementById("date").textContent =
+  new Date().toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+</script>
+
 </body>
 </html>
