@@ -12,7 +12,11 @@
 
   function page(title, html) {
     const el = $("#content");
-    if (el) el.innerHTML = `<h2>${esc(title)}</h2>${html}`;
+    if (el) {
+        el.hidden = false;
+        el.innerHTML = `<h2>${esc(title)}</h2>${html}`;
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 
   function errorPage(err) {
