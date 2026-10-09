@@ -257,7 +257,7 @@
     window.goHome();
   };
 
-  window.listeInscriptions = async function () {
+window.listeInscriptions = async function () {
   try {
     const inscriptions = await rows("inscriptions");
     const activites = await rows("activites");
@@ -269,11 +269,13 @@
           String(a.id) === String(r.activite_id)
         );
 
+        const titre = esc(field(activite || {}, ["titre", "title"], "Activité inconnue"));
+        const telephone = esc(field(r, ["telephone"], "Non renseigné"));
+        const personnes = esc(field(r, ["nombre_personnes"], "1"));
+
         return card(
           field(r, ["nom"], "Inscription"),
-          `Sortie : ${field(activite || {}, ["titre", "title"], "Activité inconnue")}
-           <p>Téléphone : ${field(r, ["telephone"], "Non renseigné")}</p>
-           <p>Personnes : ${esc(field(r, ["nombre_personnes"], "1"))}</p>`
+          `Sortie : ${titre}<p>Téléphone : ${telephone}</p><p>Personnes : ${personnes}</p>`
         );
       }).join("") || "<p>Aucune inscription.</p>";
     }
