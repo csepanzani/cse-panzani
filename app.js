@@ -258,19 +258,30 @@
   };
 
   window.listeInscriptions = async function () {
-    try {
-      const data = await rows("inscriptions");
-      const zone = $("#admin-result");
-      if (zone) zone.innerHTML = data.map(r => card(
-        field(r, ["nom"], "Inscription"),
-        `Téléphone : ${field(r, ["telephone"], "Non renseigné")}`,
-        `<p>Personnes : ${esc(field(r, ["nombre_personnes"], "1"))}</p>`
-      )).join("") || "<p>Aucune inscription.</p>";
-    } catch (err) {
-      const zone = $("#admin-result");
-      if (zone) zone.textContent = err.message || String(err);
+  try {
+    const inscriptions = await rows("inscriptions");
+    const activites = await rows("activites");
+    const zone = $("#admin-result");
+
+    if (zone) {
+      zone.innerHTML = inscriptions.map(r => {
+        const activite = activites.find(a =>
+          String(a.id) === String(r.activite_id)
+        );
+
+        return card(
+          field(r, ["nom"], "Inscription"),
+          `Sortie : ${field(activite || {}, ["titre", "title"], "Activité inconnue")}
+           <p>Téléphone : ${field(r, ["telephone"], "Non renseigné")}</p>
+           <p>Personnes : ${esc(field(r, ["nombre_personnes"], "1"))}</p>`
+        );
+      }).join("") || "<p>Aucune inscription.</p>";
     }
-  };
+  } catch (err) {
+    const zone = $("#admin-result");
+    if (zone) zone.textContent = err.message || String(err);
+  }
+};
 
   async function init() {
     if (!window.supabase?.createClient) {
