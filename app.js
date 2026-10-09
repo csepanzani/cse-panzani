@@ -263,25 +263,42 @@ window.listeInscriptions = async function () {
     const activites = await rows("activites");
     const zone = $("#admin-result");
 
-    if (zone) {
-      zone.innerHTML = inscriptions.map(r => {
-        const activite = activites.find(a =>
-          String(a.id) === String(r.activite_id)
-        );
+    if (!zone) return;
 
-        const titre = esc(field(activite || {}, ["titre", "title"], "Activité inconnue"));
-        const telephone = esc(field(r, ["telephone"], "Non renseigné"));
-        const personnes = esc(field(r, ["nombre_personnes"], "1"));
+    zone.innerHTML = inscriptions.map(r => {
+      const activite = activites.find(a =>
+        String(a.id) === String(r.activite_id)
+      );
 
-        return card(
-          field(r, ["nom"], "Inscription"),
-          `Sortie : ${titre}<p>Téléphone : ${telephone}</p><p>Personnes : ${personnes}</p>
-        );
-      }).join("") || "<p>Aucune inscription.</p>";
-    }
+      const titre = field(
+        activite || {},
+        ["titre", "title"],
+        "Activité inconnue"
+      );
+
+      const telephone = field(
+        r,
+        ["telephone"],
+        "Non renseigné"
+      );
+
+      const personnes = field(
+        r,
+        ["nombre_personnes"],
+        "1"
+      );
+
+      return card(
+        field(r, ["nom"], "Inscription"),
+        `Sortie : ${titre} — Téléphone : ${telephone} — Personnes : ${personnes}`
+      );
+    }).join("") || "<p>Aucune inscription.</p>";
+
   } catch (err) {
     const zone = $("#admin-result");
-    if (zone) zone.textContent = err.message || String(err);
+    if (zone) {
+      zone.textContent = err.message || String(err);
+    }
   }
 };
 
