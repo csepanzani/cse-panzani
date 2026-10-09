@@ -1,149 +1,63 @@
-/* CSE PANZANI — Application principale */
 
 (() => {
   "use strict";
 
-  const $ = (selector) => document.querySelector(selector);
-
+  const $ = (s) => document.querySelector(s);
   let db = null;
-  let currentSection = "accueil";
-  let currentUser = null;
-  let currentProfile = null;
 
-  const content = () => $("#content");
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  })[c]);
 
-  function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[char]);
+  function page(title, html) {
+    const el = $("#content");
+    if (el) el.innerHTML = `<h2>${esc(title)}</h2>${html}`;
   }
 
-  function message(text, type = "info") {
-    return `<div class="cse-message cse-${type}">${escapeHTML(text)}</div>`;
+  function errorPage(err) {
+    console.error(err);
+    page("Erreur", `<p>${esc(err.message || err)}</p>
+      <button onclick="goHome()">Accueil</button>`);
   }
 
-  function showLoading(text = "Chargement...") {
-    if (content()) content().innerHTML = `<p>${escapeHTML(text)}</p>`;
+  function date(v) {
+    if (!v) return "Date à préciser";
+    const d = new Date(v);
+    return isNaN(d) ? esc(v) : d.toLocaleDateString("fr-FR");
   }
 
-  function showError(error) {
-    console.error("CSE PANZANI :", error);
-    const detail = error?.message || String(error || "Erreur inconnue");
-    if (content()) {
-      content().innerHTML = `
-        <h2>Une erreur est survenue</h2>
-        ${message(detail, "error")}
-        <button onclick="goHome()">Retour à l'accueil</button>
-      `;
-    }
+  function price(v) {
+    if (v === null || v === undefined || v === "") return "Tarif à préciser";
+    const n = Number(v);
+    return isNaN(n) ? esc(v) : n.toLocaleString("fr-FR", {
+      style: "currency", currency: "EUR"
+    });
   }
 
-  function formatDate(value) {
-    if (!value) return "Date à préciser";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return escapeHTML(value);
-    return date.toLocaleDateString("fr-FR");
-  }
-
-  function formatPrice(value) {
-    if (value === null || value === undefined || value === "") {
-      return "Tarif à préciser";
-    }
-    const number = Number(value);
-    return Number.isNaN(number)
-      ? escapeHTML(value)
-      : number.toLocaleString("fr-FR", {
-          style: "currency",
-          currency: "EUR"
-        });
-  }
-
-  function valueOf(row, keys, fallback = "") {
-    for (const key of keys) {
-      if (row && row[key] !== undefined && row[key] !== null && row[key] !== "") {
-        return row[key];
+  function field(row, names, fallback = "") {
+    for (const n of names) {
+      if (row[n] !== null && row[n] !== undefined && row[n] !== "") {
+        return row[n];
       }
     }
     return fallback;
   }
 
-  async function readTable(table, query = "*") {
-    if (!db) throw new Error("La connexion à Supabase n'est pas initialisée.");
-    const { data, error } = await db.from(table).select(query);
+  async function rows(table) {
+    const { data, error } = await db.from(table).select("*");
     if (error) throw error;
     return data || [];
   }
 
-  function setPage(title, html) {
-    if (!content()) {
-      console.error("La zone #content est introuvable dans index.html.");
-      return;
-    }
-    content().innerHTML = `<h2>${escapeHTML(title)}</h2>${html}`;
+  function card(title, text, extra = "") {
+    return `<article style="padding:14px;margin:12px 0;border:1px solid #ddd;border-radius:12px">
+      <h3>${esc(title)}</h3><p>${esc(text)}</p>${extra}</article>`;
   }
-
-  function card(title, description, extra = "") {
-    return `
-      <article class="cse-card" style="padding:14px;margin:12px 0;border:1px solid #ddd;border-radius:12px">
-        <h3>${escapeHTML(title || "Sans titre")}</h3>
-        <p>${escapeHTML(description || "")}</p>
-        ${extra}
-      </article>
-    `;
-  }
-
-  function empty(text) {
-    return `<p>${escapeHTML(text)}</p>`;
-  }
-
-  // NAVIGATION
-
-  window.showSection = async function (section) {
-    currentSection = section || "accueil";
-
-    const pages = {
-      actualites: afficherActualites,
-      billetterie: () => afficherActualites("billetterie"),
-      offres: () => afficherActualites("offres"),
-      sorties: afficherSorties,
-      agenda: afficherAgenda,
-      inscriptions: afficherInscriptions,
-      documents: afficherDocuments,
-      notifications: afficherNotifications,
-      contact: afficherContact,
-      plus: afficherPlus,
-      admin: afficherAdmin
-    };
-
-    const page = pages[currentSection];
-
-    if (!page) {
-      afficherAccueil();
-      return;
-    }
-
-    try {
-      await page();
-    } catch (error) {
-      showError(error);
-    }
-  };
 
   window.goHome = function () {
-    currentSection = "accueil";
-    afficherAccueil();
-  };
-
-  function afficherAccueil() {
-    if (!content()) return;
-
-    content().innerHTML = `
-      <h2>Bienvenue au CSE Panzani</h2>
-      <p>Retrouvez ici les actualités, les sorties, les offres et les documents du CSE.</p>
+    page("CSE Panzani", `
+      <p>Bienvenue sur l'application du CSE.</p>
       <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
         <button onclick="showSection('actualites')">Actualités</button>
         <button onclick="showSection('billetterie')">Billetterie</button>
@@ -154,139 +68,225 @@
         <button onclick="showSection('documents')">Documents</button>
         <button onclick="showSection('notifications')">Notifications</button>
         <button onclick="showSection('contact')">Contact</button>
-        <button onclick="showSection('plus')">Plus</button>
-      </div>
-    `;
-  }
-
-  // ACTUALITÉS, BILLETTERIE ET OFFRES
-
-  async function afficherActualites(categorie = "") {
-    showLoading("Chargement des actualités...");
-
-    const rows = await readTable("actualites");
-    let filtered = rows;
-
-    if (categorie) {
-      filtered = rows.filter((row) => {
-        const cat = String(valueOf(row, ["categorie", "category", "type"], ""))
-          .toLowerCase();
-        return cat.includes(categorie.toLowerCase());
-      });
-    }
-
-    filtered.sort((a, b) => {
-      const da = new Date(valueOf(a, ["created_at", "date", "date_publication"], 0));
-      const dbb = new Date(valueOf(b, ["created_at", "date", "date_publication"], 0));
-      return dbb - da;
-    });
-
-    const html = filtered.map((row) => {
-      const titre = valueOf(row, ["titre", "title", "nom"], "Actualité");
-      const description = valueOf(row, ["description", "contenu", "texte"], "");
-      const date = valueOf(row, ["date", "date_publication", "created_at"], "");
-      const prix = valueOf(row, ["prix", "tarif"], "");
-      const lien = valueOf(row, ["lien", "url", "document_url"], "");
-
-      return card(
-        titre,
-        description,
-        `
-          ${date ? `<p><strong>Date :</strong> ${formatDate(date)}</p>` : ""}
-          ${prix !== "" ? `<p><strong>Tarif :</strong> ${formatPrice(prix)}</p>` : ""}
-          ${lien && /^https?:\/\//i.test(lien)
-            ? `<p><a href="${escapeHTML(lien)}" target="_blank" rel="noopener">En savoir plus</a></p>`
-            : ""}
-        `
-      );
-    }).join("");
-
-    setPage(
-      categorie === "billetterie" ? "Billetterie" :
-      categorie === "offres" ? "Offres du CSE" : "Actualités",
-      html || empty("Aucune publication pour le moment.")
-    );
-  }
-
-  // SORTIES ET ACTIVITÉS
-
-  async function afficherSorties() {
-    showLoading("Chargement des sorties...");
-
-    const rows = await readTable("activites");
-    const html = rows.map((row) => {
-      const titre = valueOf(row, ["titre", "nom", "libelle"], "Activité");
-      const description = valueOf(row, ["description", "details", "contenu"], "");
-      const date = valueOf(row, ["date_activite", "date", "date_debut"], "");
-      const prix = valueOf(row, ["prix", "tarif", "prix_adulte"], "");
-      const places = valueOf(row, ["places_disponibles", "nombre_places"], "");
-      const id = valueOf(row, ["id"], "");
-
-      return card(
-        titre,
-        description,
-        `
-          <p><strong>Date :</strong> ${formatDate(date)}</p>
-          <p><strong>Tarif :</strong> ${formatPrice(prix)}</p>
-          ${places !== "" ? `<p><strong>Places disponibles :</strong> ${escapeHTML(places)}</p>` : ""}
-          <button onclick="ouvrirInscription('${escapeHTML(id)}','${escapeHTML(titre)}')">
-            S'inscrire
-          </button>
-        `
-      );
-    }).join("");
-
-    setPage("Sorties et activités", html || empty("Aucune sortie publiée pour le moment."));
-  }
-
-  async function afficherAgenda() {
-    showLoading("Chargement de l'agenda...");
-
-    const rows = await readTable("activites");
-    rows.sort((a, b) => {
-      const da = new Date(valueOf(a, ["date_activite", "date", "date_debut"], 0));
-      const dbb = new Date(valueOf(b, ["date_activite", "date", "date_debut"], 0));
-      return da - dbb;
-    });
-
-    const html = rows.map((row) => {
-      const titre = valueOf(row, ["titre", "nom", "libelle"], "Activité");
-      const date = valueOf(row, ["date_activite", "date", "date_debut"], "");
-      const lieu = valueOf(row, ["lieu", "endroit"], "");
-      return card(titre, lieu, `<p><strong>Date :</strong> ${formatDate(date)}</p>`);
-    }).join("");
-
-    setPage("Agenda", html || empty("Aucun événement dans l'agenda."));
-  }
-
-  // INSCRIPTIONS
-
-  window.ouvrirInscription = function (id, titre) {
-    if (!content()) return;
-
-    content().innerHTML = `
-      <h2>Inscription</h2>
-      <p>Activité : <strong>${escapeHTML(titre)}</strong></p>
-      <form id="cse-inscription-form">
-        <input type="hidden" name="activite_id" value="${escapeHTML(id)}">
-        <label>Nom et prénom</label>
-        <input name="nom" required maxlength="150" autocomplete="name">
-        <label>Téléphone</label>
-        <input name="telephone" type="tel" maxlength="30" autocomplete="tel">
-        <label>Nombre de personnes</label>
-        <input name="nombre_personnes" type="number" min="1" max="20" value="1" required>
-        <button type="submit">Envoyer l'inscription</button>
-        <button type="button" onclick="showSection('sorties')">Annuler</button>
-        <div id="cse-inscription-result"></div>
-      </form>
-    `;
-
-    $("#cse-inscription-form").addEventListener("submit", envoyerInscription);
+        <button onclick="showSection('admin')">Administration</button>
+      </div>`);
   };
 
-  async function envoyerInscription(event) {
-    event.preventDefault();
+  window.showSection = async function (section) {
+    try {
+      page("Chargement", "<p>Chargement en cours…</p>");
 
-    const form = event.currentTarget;
-    const result = $("#cse-inscription-result");
-    const fd = new Form
+      if (["actualites", "billetterie", "offres"].includes(section)) {
+        let data = await rows("actualites");
+        if (section !== "actualites") {
+          data = data.filter(r => String(field(r, ["categorie", "category", "type"]))
+            .toLowerCase().includes(section === "offres" ? "offre" : "billetterie"));
+        }
+        page(section === "offres" ? "Offres" :
+          section === "billetterie" ? "Billetterie" : "Actualités",
+          data.map(r => card(
+            field(r, ["titre", "title", "nom"], "Publication"),
+            field(r, ["description", "contenu", "texte"]),
+            `${field(r, ["date", "date_publication", "created_at"]) ?
+              `<p>Date : ${date(field(r, ["date", "date_publication", "created_at"]))}</p>` : ""}
+             ${field(r, ["prix", "tarif"]) !== "" ?
+              `<p>Tarif : ${price(field(r, ["prix", "tarif"]))}</p>` : ""}`
+          )).join("") || "<p>Aucune publication pour le moment.</p>");
+        return;
+      }
+
+      if (section === "sorties" || section === "agenda") {
+        let data = await rows("activites");
+        data.sort((a, b) => new Date(field(a, ["date_activite", "date"], 0)) -
+          new Date(field(b, ["date_activite", "date"], 0)));
+        page(section === "agenda" ? "Agenda" : "Sorties et activités",
+          data.map(r => {
+            const id = field(r, ["id"]);
+            const titre = field(r, ["titre", "nom", "libelle"], "Activité");
+            return card(titre, field(r, ["description", "details"]),
+              `<p>Date : ${date(field(r, ["date_activite", "date"]))}</p>
+               <p>Tarif : ${price(field(r, ["prix", "tarif"]))}</p>
+               ${section === "sorties" ?
+                 `<button onclick="ouvrirInscription('${esc(id)}','${esc(titre)}')">S'inscrire</button>` : ""}`);
+          }).join("") || "<p>Aucune activité publiée.</p>");
+        return;
+      }
+
+      if (section === "documents") {
+        const data = await rows("documents");
+        page("Documents", data.map(r => {
+          const url = field(r, ["url", "lien", "fichier_url", "document_url"]);
+          return card(field(r, ["titre", "nom"], "Document"),
+            field(r, ["description", "details"]),
+            /^https?:\/\//i.test(url) ?
+              `<a href="${esc(url)}" target="_blank" rel="noopener">Ouvrir</a>` : "");
+        }).join("") || "<p>Aucun document disponible.</p>");
+        return;
+      }
+
+      if (section === "notifications") {
+        const data = await rows("notifications");
+        page("Notifications", data.map(r => card(
+          field(r, ["titre", "nom"], "Notification"),
+          field(r, ["message", "contenu", "description"])
+        )).join("") || "<p>Aucune notification.</p>");
+        return;
+      }
+
+      if (section === "inscriptions") {
+        page("Inscriptions", `<p>Choisis une activité pour t'inscrire.</p>
+          <button onclick="showSection('sorties')">Voir les sorties</button>`);
+        return;
+      }
+
+      if (section === "contact") {
+        page("Contact", "<p>Pour toute question, rapproche-toi des élus du CSE Panzani.</p>");
+        return;
+      }
+
+      if (section === "admin") {
+        afficherAdmin();
+        return;
+      }
+
+      window.goHome();
+    } catch (err) {
+      errorPage(err);
+    }
+  };
+
+  window.ouvrirInscription = function (id, titre) {
+    page("Inscription", `<p>Activité : <strong>${esc(titre)}</strong></p>
+      <form id="inscription-form">
+        <input type="hidden" name="activite_id" value="${esc(id)}">
+        <p><label>Nom et prénom<br><input name="nom" required maxlength="150"></label></p>
+        <p><label>Téléphone<br><input name="telephone" type="tel" maxlength="30"></label></p>
+        <p><label>Nombre de personnes<br><input name="nombre_personnes" type="number" min="1" max="20" value="1" required></label></p>
+        <button type="submit">Envoyer l'inscription</button>
+        <div id="inscription-result"></div>
+      </form>`);
+    $("#inscription-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = e.currentTarget;
+      const fd = new FormData(f);
+      const result = $("#inscription-result");
+      const payload = {
+        activite_id: fd.get("activite_id") || null,
+        nom: String(fd.get("nom") || "").trim(),
+        telephone: String(fd.get("telephone") || "").trim(),
+        nombre_personnes: Number(fd.get("nombre_personnes") || 1)
+      };
+      try {
+        const { error } = await db.from("inscriptions").insert([payload]);
+        if (error) throw error;
+        result.textContent = "Inscription envoyée.";
+        f.reset();
+      } catch (err) {
+        result.textContent = "Erreur : " + (err.message || err);
+      }
+    });
+  };
+
+  async function afficherAdmin() {
+    const { data: sessionData } = await db.auth.getSession();
+    const user = sessionData?.session?.user;
+
+    if (!user) {
+      page("Connexion administrateur", `<form id="login-form">
+        <p><input name="email" type="email" placeholder="Adresse e-mail" required></p>
+        <p><input name="password" type="password" placeholder="Mot de passe" required></p>
+        <button type="submit">Se connecter</button>
+        <div id="login-result"></div>
+      </form>`);
+      $("#login-form").addEventListener("submit", async e => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const { error } = await db.auth.signInWithPassword({
+          email: fd.get("email"), password: fd.get("password")
+        });
+        if (error) $("#login-result").textContent = error.message;
+        else afficherAdmin();
+      });
+      return;
+    }
+
+    const { data: profile, error } = await db.from("profils")
+      .select("role").eq("id", user.id).maybeSingle();
+    if (error) throw error;
+
+    if (profile?.role !== "admin") {
+      page("Administration", `<p>Accès réservé aux administrateurs.</p>
+        <button onclick="deconnexionCSE()">Déconnexion</button>`);
+      return;
+    }
+
+    page("Administration", `<p>Connecté : ${esc(user.email)}</p>
+      <h3>Créer une activité</h3>
+      <form id="activite-form">
+        <p><input name="titre" placeholder="Titre" required></p>
+        <p><textarea name="description" placeholder="Description"></textarea></p>
+        <p><input name="date_activite" type="date"></p>
+        <p><input name="prix" type="number" min="0" step="0.01" placeholder="Tarif en euros"></p>
+        <button type="submit">Créer l'activité</button>
+        <div id="activite-result"></div>
+      </form>
+      <button onclick="listeInscriptions()">Voir les inscriptions</button>
+      <div id="admin-result"></div>
+      <button onclick="deconnexionCSE()">Déconnexion</button>`);
+
+    $("#activite-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const fd = new FormData(e.currentTarget);
+      const payload = {
+        titre: String(fd.get("titre") || "").trim(),
+        description: String(fd.get("description") || "").trim(),
+        date_activite: fd.get("date_activite") || null,
+        prix: fd.get("prix") === "" ? null : Number(fd.get("prix"))
+      };
+      const { error } = await db.from("activites").insert([payload]);
+      $("#activite-result").textContent = error ? error.message : "Activité créée.";
+    });
+  }
+
+  window.deconnexionCSE = async function () {
+    await db.auth.signOut();
+    window.goHome();
+  };
+
+  window.listeInscriptions = async function () {
+    try {
+      const data = await rows("inscriptions");
+      const zone = $("#admin-result");
+      if (zone) zone.innerHTML = data.map(r => card(
+        field(r, ["nom"], "Inscription"),
+        `Téléphone : ${field(r, ["telephone"], "Non renseigné")}`,
+        `<p>Personnes : ${esc(field(r, ["nombre_personnes"], "1"))}</p>`
+      )).join("") || "<p>Aucune inscription.</p>";
+    } catch (err) {
+      const zone = $("#admin-result");
+      if (zone) zone.textContent = err.message || String(err);
+    }
+  };
+
+  async function init() {
+    if (!window.supabase?.createClient) {
+      page("Erreur", "<p>La bibliothèque Supabase n'a pas été chargée.</p>");
+      return;
+    }
+    if (!window.CSE_SUPABASE_URL || !window.CSE_SUPABASE_KEY) {
+      page("Erreur", "<p>La configuration Supabase est absente.</p>");
+      return;
+    }
+    db = window.supabase.createClient(
+      window.CSE_SUPABASE_URL, window.CSE_SUPABASE_KEY
+    );
+    window.goHome();
+    console.log("CSE Panzani initialisé");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
