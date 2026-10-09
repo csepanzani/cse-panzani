@@ -275,7 +275,7 @@ window.listeInscriptions = async function () {
 
         return card(
           field(r, ["nom"], "Inscription"),
-          `Sortie : ${titre}<p>Téléphone : ${telephone}</p><p>Personnes : ${personnes}</p>`
+          `Sortie : ${titre}Téléphone : ${telephone} — Personnes : ${personnes}
         );
       }).join("") || "<p>Aucune inscription.</p>";
     }
