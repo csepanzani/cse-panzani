@@ -1,338 +1,292 @@
-/* =========================================================
-   CSE PANZANI - APPLICATION
-   Version Supabase : contenus + activités + inscriptions
-   ========================================================= */
+/* CSE PANZANI — Application principale */
 
-const pages = {
-  actualites: ["Actualités", "📢", "Les dernières informations du CSE."],
-  billetterie: ["Billetterie", "🎟️", "Cinémas, parcs, spectacles et cartes cadeaux."],
-  sorties: ["Sorties & voyages", "🚌", "Les activités et voyages proposés par le CSE."],
-  offres: ["Offres CSE", "🎁", "Promotions et avantages négociés pour les salariés."],
-  agenda: ["Agenda", "📅", "Les prochaines dates importantes du CSE."],
-  inscriptions: ["Inscriptions", "📝", "Les inscriptions enregistrées dans l'application."],
-  documents: ["Documents", "📄", "Règlements, comptes rendus et documents utiles."],
-  contact: ["Contacter le CSE", "☎️", "Les coordonnées du CSE."],
-  notifications: ["Notifications", "🔔", "Les dernières notifications du CSE."],
-  plus: ["Plus", "☰", "Connexion et espace administrateur."]
-};
+(() => {
+  "use strict";
 
-let supabaseClient = null;
-let currentUser = null;
-let currentProfile = null;
+  const $ = (selector) => document.querySelector(selector);
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>'"]/g, character => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "'": "&#39;",
-    '"': "&quot;"
-  }[character]));
-}
+  let db = null;
+  let currentSection = "accueil";
+  let currentUser = null;
+  let currentProfile = null;
 
-function hideHome() {
-  [".welcome", ".news", ".grid", ".feature"].forEach(selector => {
-    const el = document.querySelector(selector);
-    if (el) el.hidden = true;
-  });
-}
+  const content = () => $("#content");
 
-function showHome() {
-  [".welcome", ".news", ".grid", ".feature"].forEach(selector => {
-    const el = document.querySelector(selector);
-    if (el) el.hidden = false;
-  });
-
-  const content = document.getElementById("content");
-
-  if (content) {
-    content.hidden = true;
-    content.innerHTML = "";
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]);
   }
 
-  document.querySelectorAll(".bottom button").forEach(b => {
-    b.classList.remove("active");
-  });
-
-  const home = document.querySelector(".bottom button");
-
-  if (home) {
-    home.classList.add("active");
-  }
-}
-
-function goHome() {
-  showHome();
-}
-
-function setContent(html) {
-  hideHome();
-
-  const content = document.getElementById("content");
-
-  if (!content) return null;
-
-  content.hidden = false;
-  content.innerHTML = html;
-
-  document.querySelectorAll(".bottom button").forEach(b => {
-    b.classList.remove("active");
-  });
-
-  return content;
-}
-
-function loading(title) {
-  setContent(`
-    <button class="back" onclick="goHome()">← Accueil</button>
-    <h2>${escapeHtml(title)}</h2>
-
-    <div class="authBox">
-      <p>⏳ Chargement des informations du CSE…</p>
-    </div>
-  `);
-}
-
-function errorBox(message) {
-  return `
-    <div class="authBox">
-      <p>⚠️ ${escapeHtml(message)}</p>
-    </div>
-  `;
-}
-
-function formatDate(value) {
-  if (!value) return "";
-
-  const d = new Date(value);
-
-  if (Number.isNaN(d.getTime())) {
-    return escapeHtml(value);
+  function message(text, type = "info") {
+    return `<div class="cse-message cse-${type}">${escapeHTML(text)}</div>`;
   }
 
-  return escapeHtml(
-    new Intl.DateTimeFormat("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    }).format(d)
-  );
-}
-
-function displayDate() {
-  const el = document.getElementById("date");
-
-  if (!el) return;
-
-  el.textContent = new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).format(new Date());
-}
-
-
-/* =========================================================
-   NAVIGATION DES BOUTONS
-   ========================================================= */
-
-function showSection(key) {
-
-  if (key === "sorties") {
-    return publicActivities();
+  function showLoading(text = "Chargement...") {
+    if (content()) content().innerHTML = `<p>${escapeHTML(text)}</p>`;
   }
 
-  if (key === "actualites") {
-    return showActualites();
+  function showError(error) {
+    console.error("CSE PANZANI :", error);
+    const detail = error?.message || String(error || "Erreur inconnue");
+    if (content()) {
+      content().innerHTML = `
+        <h2>Une erreur est survenue</h2>
+        ${message(detail, "error")}
+        <button onclick="goHome()">Retour à l'accueil</button>
+      `;
+    }
   }
 
-  if (key === "billetterie") {
-    return showBilletterie();
+  function formatDate(value) {
+    if (!value) return "Date à préciser";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return escapeHTML(value);
+    return date.toLocaleDateString("fr-FR");
   }
 
-  if (key === "offres") {
-    return showOffres();
+  function formatPrice(value) {
+    if (value === null || value === undefined || value === "") {
+      return "Tarif à préciser";
+    }
+    const number = Number(value);
+    return Number.isNaN(number)
+      ? escapeHTML(value)
+      : number.toLocaleString("fr-FR", {
+          style: "currency",
+          currency: "EUR"
+        });
   }
 
-  if (key === "agenda") {
-    return showAgenda();
+  function valueOf(row, keys, fallback = "") {
+    for (const key of keys) {
+      if (row && row[key] !== undefined && row[key] !== null && row[key] !== "") {
+        return row[key];
+      }
+    }
+    return fallback;
   }
 
-  if (key === "inscriptions") {
-    return showInscriptions();
+  async function readTable(table, query = "*") {
+    if (!db) throw new Error("La connexion à Supabase n'est pas initialisée.");
+    const { data, error } = await db.from(table).select(query);
+    if (error) throw error;
+    return data || [];
   }
 
-  if (key === "documents") {
-    return showDocuments();
+  function setPage(title, html) {
+    if (!content()) {
+      console.error("La zone #content est introuvable dans index.html.");
+      return;
+    }
+    content().innerHTML = `<h2>${escapeHTML(title)}</h2>${html}`;
   }
 
-  if (key === "notifications") {
-    return showNotifications();
+  function card(title, description, extra = "") {
+    return `
+      <article class="cse-card" style="padding:14px;margin:12px 0;border:1px solid #ddd;border-radius:12px">
+        <h3>${escapeHTML(title || "Sans titre")}</h3>
+        <p>${escapeHTML(description || "")}</p>
+        ${extra}
+      </article>
+    `;
   }
 
-  if (key === "contact") {
-    return showContact();
+  function empty(text) {
+    return `<p>${escapeHTML(text)}</p>`;
   }
 
-  if (key === "plus") {
-    return showAuth();
-  }
+  // NAVIGATION
 
-  return showActualites();
-}
+  window.showSection = async function (section) {
+    currentSection = section || "accueil";
 
+    const pages = {
+      actualites: afficherActualites,
+      billetterie: () => afficherActualites("billetterie"),
+      offres: () => afficherActualites("offres"),
+      sorties: afficherSorties,
+      agenda: afficherAgenda,
+      inscriptions: afficherInscriptions,
+      documents: afficherDocuments,
+      notifications: afficherNotifications,
+      contact: afficherContact,
+      plus: afficherPlus,
+      admin: afficherAdmin
+    };
 
-/* =========================================================
-   ACTUALITÉS
-   ========================================================= */
+    const page = pages[currentSection];
 
-async function showActualites() {
+    if (!page) {
+      afficherAccueil();
+      return;
+    }
 
-  loading("📢 Actualités");
+    try {
+      await page();
+    } catch (error) {
+      showError(error);
+    }
+  };
 
-  if (!supabaseClient) {
+  window.goHome = function () {
+    currentSection = "accueil";
+    afficherAccueil();
+  };
 
-    setContent(`
-      <button class="back" onclick="goHome()">← Accueil</button>
-      <h2>📢 Actualités</h2>
-      ${errorBox("Supabase n'est pas configuré.")}
-    `);
+  function afficherAccueil() {
+    if (!content()) return;
 
-    return;
-  }
-
-  const { data, error } = await supabaseClient
-    .from("actualites")
-    .select("id,titre,contenu,image_url,created_at")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-
-    setContent(`
-      <button class="back" onclick="goHome()">← Accueil</button>
-      <h2>📢 Actualités</h2>
-      ${errorBox(
-        "Impossible de charger les actualités : " + error.message
-      )}
-    `);
-
-    return;
-  }
-
-  let html = `
-    <button class="back" onclick="goHome()">← Accueil</button>
-    <h2>📢 Actualités</h2>
-  `;
-
-  if (!data?.length) {
-
-    html += `
-      <div class="authBox">
-        <p>Aucune actualité publiée pour le moment.</p>
+    content().innerHTML = `
+      <h2>Bienvenue au CSE Panzani</h2>
+      <p>Retrouvez ici les actualités, les sorties, les offres et les documents du CSE.</p>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+        <button onclick="showSection('actualites')">Actualités</button>
+        <button onclick="showSection('billetterie')">Billetterie</button>
+        <button onclick="showSection('sorties')">Sorties</button>
+        <button onclick="showSection('offres')">Offres</button>
+        <button onclick="showSection('agenda')">Agenda</button>
+        <button onclick="showSection('inscriptions')">Inscriptions</button>
+        <button onclick="showSection('documents')">Documents</button>
+        <button onclick="showSection('notifications')">Notifications</button>
+        <button onclick="showSection('contact')">Contact</button>
+        <button onclick="showSection('plus')">Plus</button>
       </div>
     `;
-
-  } else {
-
-    data.forEach(item => {
-
-      html += `
-        <article class="adminEvent">
-
-          <strong>
-            ${escapeHtml(item.titre)}
-          </strong>
-
-          ${
-            item.created_at
-              ? `<small>📅 ${formatDate(item.created_at)}</small>`
-              : ""
-          }
-
-          ${
-            item.image_url
-              ? `
-                <img
-                  src="${escapeHtml(item.image_url)}"
-                  alt=""
-                  style="
-                    width:100%;
-                    border-radius:12px;
-                    margin:8px 0;
-                    max-height:260px;
-                    object-fit:cover;
-                  "
-                >
-              `
-              : ""
-          }
-
-          <p>
-            ${escapeHtml(item.contenu || "")}
-          </p>
-
-        </article>
-      `;
-    });
   }
 
-  setContent(html);
-}
+  // ACTUALITÉS, BILLETTERIE ET OFFRES
 
+  async function afficherActualites(categorie = "") {
+    showLoading("Chargement des actualités...");
 
-/* =========================================================
-   BILLETTERIE
-   ========================================================= */
+    const rows = await readTable("actualites");
+    let filtered = rows;
 
-async function showBilletterie() {
+    if (categorie) {
+      filtered = rows.filter((row) => {
+        const cat = String(valueOf(row, ["categorie", "category", "type"], ""))
+          .toLowerCase();
+        return cat.includes(categorie.toLowerCase());
+      });
+    }
 
-  await showFilteredActualites(
-    "🎟️ Billetterie",
-    [
-      "billetterie",
-      "cinéma",
-      "cinema",
-      "parc",
-      "spectacle",
-      "carte cadeau",
-      "tickets",
-      "ticket"
-    ]
-  );
-}
+    filtered.sort((a, b) => {
+      const da = new Date(valueOf(a, ["created_at", "date", "date_publication"], 0));
+      const dbb = new Date(valueOf(b, ["created_at", "date", "date_publication"], 0));
+      return dbb - da;
+    });
 
+    const html = filtered.map((row) => {
+      const titre = valueOf(row, ["titre", "title", "nom"], "Actualité");
+      const description = valueOf(row, ["description", "contenu", "texte"], "");
+      const date = valueOf(row, ["date", "date_publication", "created_at"], "");
+      const prix = valueOf(row, ["prix", "tarif"], "");
+      const lien = valueOf(row, ["lien", "url", "document_url"], "");
 
-/* =========================================================
-   OFFRES CSE
-   ========================================================= */
+      return card(
+        titre,
+        description,
+        `
+          ${date ? `<p><strong>Date :</strong> ${formatDate(date)}</p>` : ""}
+          ${prix !== "" ? `<p><strong>Tarif :</strong> ${formatPrice(prix)}</p>` : ""}
+          ${lien && /^https?:\/\//i.test(lien)
+            ? `<p><a href="${escapeHTML(lien)}" target="_blank" rel="noopener">En savoir plus</a></p>`
+            : ""}
+        `
+      );
+    }).join("");
 
-async function showOffres() {
+    setPage(
+      categorie === "billetterie" ? "Billetterie" :
+      categorie === "offres" ? "Offres du CSE" : "Actualités",
+      html || empty("Aucune publication pour le moment.")
+    );
+  }
 
-  await showFilteredActualites(
-    "🎁 Offres CSE",
-    [
-      "offre",
-      "promotion",
-      "avantage",
-      "réduction",
-      "reduction",
-      "partenaire"
-    ]
-  );
-}
+  // SORTIES ET ACTIVITÉS
 
+  async function afficherSorties() {
+    showLoading("Chargement des sorties...");
 
-/* =========================================================
-   FILTRE DES ACTUALITÉS
-   ========================================================= */
+    const rows = await readTable("activites");
+    const html = rows.map((row) => {
+      const titre = valueOf(row, ["titre", "nom", "libelle"], "Activité");
+      const description = valueOf(row, ["description", "details", "contenu"], "");
+      const date = valueOf(row, ["date_activite", "date", "date_debut"], "");
+      const prix = valueOf(row, ["prix", "tarif", "prix_adulte"], "");
+      const places = valueOf(row, ["places_disponibles", "nombre_places"], "");
+      const id = valueOf(row, ["id"], "");
 
-async function showFilteredActualites(title, keywords) {
+      return card(
+        titre,
+        description,
+        `
+          <p><strong>Date :</strong> ${formatDate(date)}</p>
+          <p><strong>Tarif :</strong> ${formatPrice(prix)}</p>
+          ${places !== "" ? `<p><strong>Places disponibles :</strong> ${escapeHTML(places)}</p>` : ""}
+          <button onclick="ouvrirInscription('${escapeHTML(id)}','${escapeHTML(titre)}')">
+            S'inscrire
+          </button>
+        `
+      );
+    }).join("");
 
-  loading(title);
+    setPage("Sorties et activités", html || empty("Aucune sortie publiée pour le moment."));
+  }
 
-  if (!supabaseClient) {
+  async function afficherAgenda() {
+    showLoading("Chargement de l'agenda...");
 
-    setContent(`
-      <button class="back" onclick="goHome()">← Accueil</button>
-      <h2>${title}</h2>
-      ${errorBox("Supabase n'est
+    const rows = await readTable("activites");
+    rows.sort((a, b) => {
+      const da = new Date(valueOf(a, ["date_activite", "date", "date_debut"], 0));
+      const dbb = new Date(valueOf(b, ["date_activite", "date", "date_debut"], 0));
+      return da - dbb;
+    });
+
+    const html = rows.map((row) => {
+      const titre = valueOf(row, ["titre", "nom", "libelle"], "Activité");
+      const date = valueOf(row, ["date_activite", "date", "date_debut"], "");
+      const lieu = valueOf(row, ["lieu", "endroit"], "");
+      return card(titre, lieu, `<p><strong>Date :</strong> ${formatDate(date)}</p>`);
+    }).join("");
+
+    setPage("Agenda", html || empty("Aucun événement dans l'agenda."));
+  }
+
+  // INSCRIPTIONS
+
+  window.ouvrirInscription = function (id, titre) {
+    if (!content()) return;
+
+    content().innerHTML = `
+      <h2>Inscription</h2>
+      <p>Activité : <strong>${escapeHTML(titre)}</strong></p>
+      <form id="cse-inscription-form">
+        <input type="hidden" name="activite_id" value="${escapeHTML(id)}">
+        <label>Nom et prénom</label>
+        <input name="nom" required maxlength="150" autocomplete="name">
+        <label>Téléphone</label>
+        <input name="telephone" type="tel" maxlength="30" autocomplete="tel">
+        <label>Nombre de personnes</label>
+        <input name="nombre_personnes" type="number" min="1" max="20" value="1" required>
+        <button type="submit">Envoyer l'inscription</button>
+        <button type="button" onclick="showSection('sorties')">Annuler</button>
+        <div id="cse-inscription-result"></div>
+      </form>
+    `;
+
+    $("#cse-inscription-form").addEventListener("submit", envoyerInscription);
+  };
+
+  async function envoyerInscription(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const result = $("#cse-inscription-result");
+    const fd = new Form
