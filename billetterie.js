@@ -23,6 +23,9 @@
   async function afficherBilletterie() {
     const zone = document.querySelector("#content");
     if (!zone) return;
+        const main = document.querySelector("main");
+    const accueil = main?.querySelector(".welcome");
+    if (main && accueil) main.insertBefore(zone, accueil);
 
     zone.hidden = false;
     zone.innerHTML = "<h2>Billetterie</h2><p>Chargement des offres…</p>";
