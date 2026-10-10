@@ -244,7 +244,12 @@
       <option value="photos">Photo publique</option>
     </select>
   </p>
-  <p><input name="fichier" type="file" accept="image/*,.pdf,.doc,.docx" required></p>
+  <p>
+  <label for="fichier-cse">Choisir une photo ou un document</label>
+  <input id="fichier-cse" name="fichier" type="file"
+         accept="image/*,.pdf,.doc,.docx" required
+         style="display:block;width:100%;padding:15px">
+</p>
   <button type="submit">Envoyer le fichier</button>
   <div id="fichier-result"></div>
 </form>
