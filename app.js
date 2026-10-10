@@ -484,3 +484,4 @@ window.traiterDemandeBilletterie = async function (id, statut) {
   alert("Demande mise à jour.");
   window.gererDemandesBilletterie();
 };
+  })();
