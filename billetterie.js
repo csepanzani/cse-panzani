@@ -105,12 +105,26 @@
     resultat.textContent = "Demande envoyée au CSE ! Elle est en attente de validation.";
   });
 
+  
+  function afficherAccueil(visible) {
+    ["welcome", "news", "grid", "feature"].forEach(classe => {
+      const element = document.querySelector("main > ." + classe);
+      if (element) element.hidden = !visible;
+    });
+  }
+
   const ancienneSection = window.showSection;
   window.showSection = async function(section) {
+    afficherAccueil(section !== "billetterie");
+
     if (section === "billetterie") {
       await afficherBilletterie();
       return;
     }
-    if (ancienneSection) return ancienneSection.apply(this, arguments);
+
+    if (ancienneSection) {
+      return ancienneSection.apply(this, arguments);
+    }
   };
+  
 })();
