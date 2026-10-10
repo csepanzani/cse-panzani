@@ -382,36 +382,48 @@ window.supprimerFichierCSE = async function(nomEncode) {
   chargerFichiersCSE();
 };
 
+
 document.addEventListener("submit", async function(e) {
-  if (e.target.id !== "fichier-form") return;
+  if (!e.target || e.target.id !== "fichier-form") return;
   e.preventDefault();
 
-  const resultat = document.querySelector("#fichier-result");
-  const fichier = e.target.querySelector('[name="fichier"]').files[0];
+  const form = e.target;
+  const resultat = form.querySelector("#fichier-result");
+  const input = form.querySelector('[name="fichier"]');
+  const fichier = input && input.files ? input.files[0] : null;
+
+  if (!resultat || !db) {
+    alert("Erreur : connexion à la base non initialisée.");
+    return;
+  }
+
   if (!fichier) {
     resultat.textContent = "Choisis un fichier.";
     return;
   }
 
-  resultat.textContent = "Envoi en cours…";
-  const dossier = e.target.querySelector('[name="type"]').value;
-  const chemin = dossier + "/" + Date.now() + "-" +
-    fichier.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  try {
+    resultat.textContent = "Envoi en cours…";
 
-  const { error } = await db.storage
-    .from("cse-documents")
-    .upload(chemin, fichier, {
-      contentType: fichier.type || "application/octet-stream",
-      upsert: false
-    });
+    const dossier = form.querySelector('[name="type"]').value;
+    const chemin = dossier + "/" + Date.now() + "-" +
+      fichier.name.replace(/[^a-zA-Z0-9._-]/g, "_");
 
-  if (error) {
-    resultat.textContent = "Erreur : " + error.message;
-    return;
+    const { error } = await db.storage
+      .from("cse-documents")
+      .upload(chemin, fichier, {
+        contentType: fichier.type || "application/octet-stream",
+        upsert: false
+      });
+
+    if (error) throw error;
+
+    resultat.textContent = "Fichier envoyé !";
+    form.reset();
+    await chargerFichiersCSE();
+  } catch (err) {
+    resultat.textContent = "Erreur : " + (err.message || String(err));
   }
-
-  resultat.textContent = "Fichier envoyé !";
-  e.target.reset();
-  chargerFichiersCSE();
 });
+  
 })();
