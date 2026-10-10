@@ -22,10 +22,6 @@
 
   async function afficherBilletterie() {
     const zone = document.querySelector("#content");
-    document.querySelector("main > .welcome")?.setAttribute("hidden", "");
-document.querySelector("main > .news")?.setAttribute("hidden", "");
-document.querySelector("main > .grid")?.setAttribute("hidden", "");
-document.querySelector("main > .feature")?.setAttribute("hidden", "");
     if (!zone) return;
 
     zone.hidden = false;
