@@ -109,12 +109,12 @@
   });
 
   
-  function afficherAccueil(visible) {
+    function afficherAccueil(visible) {
     ["welcome", "news", "grid", "feature"].forEach(classe => {
       const element = document.querySelector("main > ." + classe);
-      if (element) element.hidden = !visible;
+      if (element) element.style.display = visible ? "" : "none";
     });
-  }
+    }
 
   const ancienneSection = window.showSection;
   window.showSection = async function(section) {
