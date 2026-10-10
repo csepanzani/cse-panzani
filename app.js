@@ -142,6 +142,16 @@
           <button onclick="showSection('sorties')">Voir les sorties</button>`);
         return;
       }
+      if (section === "plus") {
+  page("Plus", `
+    <button onclick="showSection('admin')">Administration</button>
+    <button onclick="showSection('sorties')">Sorties et voyages</button>
+    <button onclick="showSection('agenda')">Agenda</button>
+    <button onclick="showSection('documents')">Documents</button>
+    <button onclick="showSection('contact')">Contact</button>
+  `);
+  return;
+      }
 
       if (section === "contact") {
         page("Contact", "<p>Pour toute question, rapproche-toi des élus du CSE Panzani.</p>");
