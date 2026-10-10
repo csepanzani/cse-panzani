@@ -236,6 +236,19 @@
       </form>
       <button onclick="listeInscriptions()">Voir les inscriptions</button>
       <div id="admin-result"></div>
+      <h3>Gestion des photos et documents</h3>
+<form id="fichier-form">
+  <p>
+    <select name="type">
+      <option value="documents">Document public</option>
+      <option value="photos">Photo publique</option>
+    </select>
+  </p>
+  <p><input name="fichier" type="file" required></p>
+  <button type="submit">Envoyer le fichier</button>
+  <div id="fichier-result"></div>
+</form>
+<div id="fichiers-liste"></div>
       <button onclick="deconnexionCSE()">Déconnexion</button>`);
 
     $("#activite-form").addEventListener("submit", async e => {
@@ -323,4 +336,82 @@ window.listeInscriptions = async function () {
   } else {
     init();
   }
+  // GESTION DES PHOTOS ET DOCUMENTS CSE
+async function chargerFichiersCSE() {
+  const zone = document.querySelector("#fichiers-liste");
+  if (!zone) return;
+
+  const { data, error } = await db.storage
+    .from("cse-documents")
+    .list("", { limit: 100 });
+
+  if (error) {
+    zone.textContent = "Erreur : " + error.message;
+    return;
+  }
+
+  zone.innerHTML = (data || [])
+    .filter(f => f.name && !f.name.startsWith("."))
+    .map(f => {
+      const url = db.storage.from("cse-documents")
+        .getPublicUrl(f.name).data.publicUrl;
+      const image = /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name);
+
+      return `
+        <div style="border:1px solid #ddd;padding:12px;margin:8px 0;border-radius:8px">
+          ${image
+            ? `<img src="${url}" alt="" style="max-width:100%;max-height:180px">`
+            : ""}
+          <p>${esc(f.name)}</p>
+          <a href="${url}" target="_blank" rel="noopener">Ouvrir</a>
+          <button type="button" onclick="supprimerFichierCSE('${encodeURIComponent(f.name)}')">
+            Supprimer
+          </button>
+        </div>`;
+    }).join("") || "<p>Aucun fichier pour le moment.</p>";
+}
+
+window.supprimerFichierCSE = async function(nomEncode) {
+  if (!confirm("Supprimer ce fichier ?")) return;
+  const nom = decodeURIComponent(nomEncode);
+  const { error } = await db.storage.from("cse-documents").remove([nom]);
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+  chargerFichiersCSE();
+};
+
+document.addEventListener("submit", async function(e) {
+  if (e.target.id !== "fichier-form") return;
+  e.preventDefault();
+
+  const resultat = document.querySelector("#fichier-result");
+  const fichier = e.target.querySelector('[name="fichier"]').files[0];
+  if (!fichier) {
+    resultat.textContent = "Choisis un fichier.";
+    return;
+  }
+
+  resultat.textContent = "Envoi en cours…";
+  const dossier = e.target.querySelector('[name="type"]').value;
+  const chemin = dossier + "/" + Date.now() + "-" +
+    fichier.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+  const { error } = await db.storage
+    .from("cse-documents")
+    .upload(chemin, fichier, {
+      contentType: fichier.type || "application/octet-stream",
+      upsert: false
+    });
+
+  if (error) {
+    resultat.textContent = "Erreur : " + error.message;
+    return;
+  }
+
+  resultat.textContent = "Fichier envoyé !";
+  e.target.reset();
+  chargerFichiersCSE();
+});
 })();
