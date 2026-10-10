@@ -225,6 +225,9 @@
     }
 
     page("Administration", `<p>Connecté : ${esc(user.email)}</p>
+    <h3>Gestion de la billetterie</h3>
+<button type="button" onclick="gererDemandesBilletterie()">Voir les demandes de billets</button>
+<div id="demandes-billetterie-admin"></div>
       <h3>Créer une activité</h3>
       <form id="activite-form">
         <p><input name="titre" placeholder="Titre" required></p>
@@ -430,5 +433,54 @@ document.addEventListener("submit", async function(e) {
     resultat.textContent = "Erreur : " + (err.message || String(err));
   }
 });
-  
-})();
+  window.gererDemandesBilletterie = async function () {
+  const zone = document.querySelector("#demandes-billetterie-admin");
+  if (!zone) return;
+
+  zone.innerHTML = "<p>Chargement des demandes…</p>";
+
+  const { data, error } = await db
+    .from("billetterie_demandes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    zone.textContent = "Erreur : " + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    zone.innerHTML = "<p>Aucune demande de billets.</p>";
+    return;
+  }
+
+  zone.innerHTML = data.map(d => `
+    <article style="border:1px solid #ddd;padding:12px;margin:10px 0;border-radius:8px">
+      <strong>${esc(d.nom)}</strong>
+      <p>Téléphone : ${esc(d.telephone || "Non renseigné")}</p>
+      <p>Quantité : ${Number(d.quantite)}</p>
+      <p>Statut : ${esc(d.statut)}</p>
+      ${d.statut === "en_attente" ? `
+        <button type="button" onclick="traiterDemandeBilletterie(${Number(d.id)}, 'acceptee')">Accepter</button>
+        <button type="button" onclick="traiterDemandeBilletterie(${Number(d.id)}, 'refusee')">Refuser</button>
+      ` : ""}
+    </article>
+  `).join("");
+};
+
+window.traiterDemandeBilletterie = async function (id, statut) {
+  if (!confirm("Confirmer cette décision ?")) return;
+
+  const { error } = await db
+    .from("billetterie_demandes")
+    .update({ statut })
+    .eq("id", id);
+
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+
+  alert("Demande mise à jour.");
+  window.gererDemandesBilletterie();
+};
