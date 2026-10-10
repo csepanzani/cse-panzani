@@ -244,7 +244,7 @@
       <option value="photos">Photo publique</option>
     </select>
   </p>
-  <p><input name="fichier" type="file" required></p>
+  <p><input name="fichier" type="file" accept="image/*,.pdf,.doc,.docx" required></p>
   <button type="submit">Envoyer le fichier</button>
   <div id="fichier-result"></div>
 </form>
